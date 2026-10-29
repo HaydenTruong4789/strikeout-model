@@ -1,0 +1,2416 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Strikeout Sim</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Midnight precision instrument: near-black surfaces, paper-white type, hairline borders,
+   one acid-lime accent for the single primary action per view. Single dark look on purpose. */
+:root {
+  color-scheme: dark;
+  --void: #08090a; --carbon: #0f1011; --obsidian: #161718; --graphite: #23252a; --smoke: #383b3f;
+  --ash: #62666d; --fog: #8a8f98; --mist: #d0d6e0; --paper: #ffffff; --lime: #e4f222; --coral: #eb5757;
+  --input-bg: rgba(255,255,255,.02); --input-edge: rgba(255,255,255,.08); --pill: rgba(255,255,255,.05);
+  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+html, body { background: var(--void); color: var(--mist); margin: 0; overflow-x: hidden; }
+body { font-family: var(--sans); font-size: 15px; line-height: 1.5; font-weight: 400;
+  font-feature-settings: "cv01" on, "ss03" on, "zero" on; -webkit-font-smoothing: antialiased; }
+.menu[hidden] { display: none; }
+h1, h2, h3 { margin: 0; font-weight: 510; color: var(--paper); text-wrap: balance; }
+h3 { font-size: 12px; font-weight: 510; color: var(--fog); letter-spacing: 0; }
+button, select, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 1px solid var(--mist); outline-offset: 2px; }
+.num, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+code { font-family: var(--mono); font-size: .9em; color: var(--mist); }
+
+/* ---------- Opening menu ---------- */
+.menu { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+  padding: 48px max(16px, env(safe-area-inset-left, 0px)); }
+.menu-inner { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 32px; }
+.menu-head { display: flex; flex-direction: column; gap: 12px; }
+.menu-head .eyebrow { font-family: var(--mono); font-size: 12px; color: var(--fog); letter-spacing: -0.013em; }
+.menu-head h1 { font-size: 48px; line-height: 1; letter-spacing: -0.022em; }
+.menu-head p { margin: 0; font-size: 16px; color: var(--fog); max-width: 52ch; }
+.menu-card { background: rgba(255,255,255,.015); border: 0; border-radius: 20px; padding: 24px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: flex; flex-direction: column; gap: 16px; }
+.menu-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 560px) { .menu-fields { grid-template-columns: minmax(0, 1fr); } .menu-head h1 { font-size: 36px; } }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label { font-size: 13px; color: var(--fog); }
+.preview { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; padding-top: 4px; border-top: 1px solid var(--graphite); padding-top: 16px; }
+.preview .big { font-size: 24px; font-weight: 510; color: var(--paper); letter-spacing: -0.012em; font-variant-numeric: tabular-nums; }
+.preview .big small { font-size: 15px; color: var(--fog); font-weight: 400; margin-left: 4px; }
+.preview .odds { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 12px; color: var(--fog); padding: 1px 2px; }
+.badge::before { content: ""; width: 11px; height: 11px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23ffb829' stroke-width='1' stroke-linejoin='round'%3E%3Cpath d='M6 1L1.5 10L10.5 9ZM6 1L7 6.2M1.5 10L7 6.2M10.5 9L7 6.2'/%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 0 3px rgba(255,184,41,.7)); }
+.badge b { color: var(--mist); font-weight: 400; }
+.combo { position: relative; }
+.combo input { width: 100%; box-sizing: border-box; padding-right: 32px; }
+.menu .combo input { border-radius: 14px; padding: 12px 40px 12px 16px; background: rgba(8,9,10,.4); border: 1px solid rgba(255,255,255,.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06); transition: border-color .2s, box-shadow .25s; }
+.menu .combo input:focus { border-color: rgba(128,82,255,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 3px rgba(128,82,255,.18), 0 0 24px rgba(128,82,255,.35); }
+.combo > .cube { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; }
+.combo-list { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; max-height: 320px; overflow-y: auto;
+  background: rgba(15,16,17,.95); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), rgba(8,9,10,.6) 0 8px 40px; padding: 6px; }
+.combo-list .head { font-size: 11px; color: var(--ash); padding: 6px 10px 2px; cursor: default; }
+.combo-list[hidden] { display: none; }
+.combo-list li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; color: var(--mist); }
+.combo-list li .sub { font-size: 12px; color: var(--fog); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.combo-list li[aria-selected="true"] { background: rgba(255,255,255,.06); }
+.combo-list li > span:first-child { white-space: nowrap; flex: 0 0 auto; }
+.combo-list li[role="option"] > span:first-child::before { content: ""; display: inline-block; width: 0; height: 10px; margin-right: 0; vertical-align: -1px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23b48cff' stroke-width='1' stroke-linejoin='round'%3E%3Cpath d='M6 1L1.5 10L10.5 9ZM6 1L7 6.2M1.5 10L7 6.2M10.5 9L7 6.2'/%3E%3C/svg%3E") center / contain no-repeat; transition: width .15s, margin-right .15s; }
+.combo-list li[aria-selected="true"] > span:first-child::before { width: 10px; margin-right: 8px; filter: drop-shadow(0 0 3px rgba(128,82,255,.8)); }
+.combo-list li mark { background: none; color: var(--paper); font-weight: 510; }
+.combo-list li.none { cursor: default; color: var(--fog); }
+.menu-actions { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.menu-note { font-size: 13px; color: var(--ash); margin: 0; }
+.menu-side .seg.cubeseg { gap: 8px; }
+
+/* Menu: the particle baseball sits right of the form on wide screens, faint behind it on phones. */
+.menu { position: relative; overflow: hidden; }
+.ballfx { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 0; }
+.ballfx.faint { opacity: .3; }
+@media (max-width: 899px) { .menu-card { background: rgba(8,9,10,.5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); } }
+.menu-inner { position: relative; z-index: 1; }
+.menu-inner.enter { animation: menuin .8s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes menuin { from { opacity: 0; transform: translateY(8px); } }
+@media (min-width: 900px) { .menu { justify-content: flex-start; padding-left: clamp(32px, 7vw, 112px); } .menu-inner { max-width: 540px; } }
+.menu-side { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.menu-side[hidden] { display: none; }
+.menu-side .flabel { font-size: 13px; color: var(--fog); }
+.menu-side .where { font-size: 13px; color: var(--fog); min-width: 0; }
+
+/* ---------- Sim page: the canvas fills the viewport, everything else floats over it ---------- */
+.simview[hidden] { display: none; }
+.stage { position: fixed; inset: 0; height: 100vh; height: 100dvh; overflow: hidden; background: var(--void); }
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#scene.grabbing { cursor: grabbing; }
+.panel { border: 1px solid var(--graphite); border-radius: 6px; background: rgba(15,16,17,.82); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.topbar { position: absolute; z-index: 3; left: 0; right: 0; top: 0; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-start; justify-content: space-between;
+  padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); pointer-events: none; }
+.topbar > * { pointer-events: auto; }
+.brand { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; min-width: 0; max-width: 100%; }
+.brand .titles { padding: 6px 10px; min-width: 0; max-width: 100%; box-sizing: border-box; }
+.brand h1 { font-size: 15px; line-height: 1.35; letter-spacing: -0.011em; font-weight: 510; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand h1 .vs { color: var(--ash); font-weight: 400; }
+.brand p { margin: 0; color: var(--fog); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.picks { display: flex; gap: 8px; min-width: 0; flex-wrap: wrap; align-items: end; padding: 8px; box-sizing: border-box; max-width: min(520px, 100%); }
+.picks[hidden] { display: none; }
+.pick { display: flex; flex-direction: column; gap: 4px; flex: 1 1 180px; min-width: 0; }
+.pick label { font-size: 12px; color: var(--fog); }
+select, input[type="number"], input[type="text"] { background: var(--input-bg); border: 1px solid var(--input-edge); border-radius: 6px;
+  padding: 9px 12px; min-width: 0; color: var(--mist); font-size: 14px; }
+select:focus, input:focus { border-color: var(--mist); outline: none; }
+select { width: 100%; }
+select option, select optgroup { background: var(--carbon); color: var(--mist); }
+
+.hud { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; pointer-events: none !important; }
+.hud .grp { display: flex; gap: 14px; align-items: baseline; padding: 5px 10px; }
+.hud .lab { font-size: 11px; color: var(--fog); margin-right: 5px; }
+.hud .val { font-family: var(--mono); font-size: 15px; color: var(--paper); font-variant-numeric: tabular-nums; }
+.hud .kval { color: var(--paper); font-weight: 510; }
+.caption { position: absolute; z-index: 2; left: 0; right: 0; bottom: calc(var(--dock-h, 64px) + 12px); text-align: center; pointer-events: none; font-weight: 510; font-size: clamp(13px, 2.2vw, 17px); letter-spacing: -0.011em; color: var(--paper); padding: 0 12px; }
+.labels { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.plist { position: absolute; z-index: 2; left: max(12px, env(safe-area-inset-left, 0px)); top: var(--top-h, 120px); bottom: calc(var(--dock-h, 64px) + 40px); width: min(190px, 40%); display: flex; flex-direction: column; gap: 4px; overflow-y: auto; pointer-events: auto; }
+.plist[hidden] { display: none; }
+.prow { display: flex; align-items: center; gap: 7px; text-align: left; font-family: var(--mono); font-size: 12px; color: var(--mist); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--graphite); background: rgba(15,16,17,.85); cursor: pointer; white-space: nowrap; animation: rowin .25s ease-out; }
+.prow .dot { width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--c)); flex: none; }
+.prow .how { color: var(--fog); margin-left: auto; padding-left: 6px; }
+.prow:hover, .prow.on { border-color: var(--smoke); background: var(--obsidian); }
+@keyframes rowin { from { opacity: 0; } }
+.phit { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: auto; cursor: pointer; background: transparent; border: 0; padding: 0; }
+.tip { position: absolute; z-index: 6; pointer-events: none; background: var(--obsidian); border: 1px solid var(--smoke); border-radius: 6px; padding: 8px 10px; font-size: 13px; line-height: 1.4; max-width: 230px; color: var(--mist); }
+.tip b { font-size: 14px; font-weight: 510; color: var(--paper); }
+.umpsum { position: absolute; z-index: 2; left: 12px; right: 12px; bottom: calc(var(--dock-h, 64px) + 12px); text-align: center; font-size: 13px; color: var(--fog); pointer-events: none; }
+/* Bottom bar: Redo alone on the left; filters, view, reset and Menu on the right. On phones the right
+   group wraps above (wrap-reverse), right-aligned, and Redo stays bottom-left. */
+.dock { position: absolute; z-index: 3; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap-reverse; gap: 8px; align-items: flex-end; justify-content: space-between; pointer-events: none;
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.dock > *, .dock-right > * { pointer-events: auto; }
+.dock-right { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; margin-left: auto; pointer-events: none; min-width: 0; }
+.handle { position: absolute; z-index: 3; right: 0; top: 50%; transform: translateY(-50%); width: 20px; height: 72px; border: 1px solid var(--graphite); border-right: 0; border-radius: 6px 0 0 6px;
+  background: rgba(15,16,17,.82); cursor: pointer; padding: 0; color: var(--fog); font-size: 14px; }
+.handle:hover { color: var(--paper); border-color: var(--smoke); }
+
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { background: transparent; border: 1px solid var(--graphite); color: var(--mist); border-radius: 6px; padding: 8px 12px; cursor: pointer; font-weight: 400; font-size: 13px; white-space: nowrap; line-height: 1.2; }
+.btn:hover { border-color: var(--smoke); background: rgba(255,255,255,.03); }
+.dock .btn:not(.primary), .topbar .btn { background: rgba(15,16,17,.82); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.btn.ghost { border-color: transparent; color: var(--fog); }
+.dock .btn.ghost, .topbar .btn.ghost { border-color: var(--graphite); }
+.btn.ghost:hover { color: var(--paper); }
+.btn.primary { background: var(--lime); color: var(--void); border-color: var(--lime); font-size: 14px; font-weight: 510; letter-spacing: -0.011em; padding: 10px 16px;
+  box-shadow: rgba(0,0,0,.01) 0 5px 2px, rgba(0,0,0,.04) 0 3px 2px, rgba(0,0,0,.07) 0 1px 1px; }
+.btn.primary:hover { background: #eef55a; }
+.btn[aria-pressed="true"] { border-color: var(--smoke); color: var(--paper); background: var(--obsidian) !important; }
+.btn:disabled { opacity: .4; cursor: default; }
+.seg { display: inline-flex; }
+.seg .btn { border-radius: 0; margin-left: -1px; }
+.seg .btn:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+.seg .btn:last-child { border-radius: 0 6px 6px 0; }
+.spacer { flex: 1 1 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips[hidden] { display: none; }
+.chip { padding: 4px 12px; border-radius: 9999px; border: 0; background: rgba(35,37,42,.85); color: var(--mist); cursor: pointer; font-size: 12px; font-family: var(--mono); }
+.chip[aria-pressed="false"] { opacity: .4; }
+@media (max-width: 600px) {
+  .hud .val { font-size: 13px; } .hud .grp { gap: 9px; padding: 4px 7px; } .hud .lab { font-size: 10px; }
+  .hud { width: 100%; justify-content: flex-start; }
+}
+
+/* ---------- Pills: the sim's buttons, bubbly and translucent, with a spring on hover ---------- */
+.pill, .ov .btn { --glow: 128,82,255; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; min-height: 44px; padding: 10px 20px; border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08); color: var(--paper); font: 500 14px/1.2 var(--sans); letter-spacing: -0.006em; white-space: nowrap; cursor: pointer;
+  transition: border-color .2s, box-shadow .25s, background-color .2s, transform .12s; }
+.pill:hover, .ov .btn:hover { border-color: rgba(255,255,255,.28); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 22px rgba(var(--glow),.45), 0 0 4px rgba(var(--glow),.35); animation: springy .35s cubic-bezier(.34,1.56,.64,1) both; }
+.pill:active, .ov .btn:active { transform: scale(.96); animation: none; }
+.pill:focus-visible, .ov .btn:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 2px; }
+.pill:disabled, .ov .btn:disabled { opacity: .4; cursor: default; animation: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+@keyframes springy { 0% { transform: translateY(0) scale(1); } 35% { transform: translateY(-1px) scale(1.06); } 65% { transform: translateY(-1px) scale(.98); } 100% { transform: translateY(-1px) scale(1.03); } }
+.pill.primary { --glow: 228,242,34; background: var(--lime); border-color: var(--lime); color: var(--void); font-weight: 510; box-shadow: inset 0 1px 0 rgba(255,255,255,.35); }
+.pill.primary:hover { background: #eef55a; border-color: #eef55a; }
+.pill.icon { width: 44px; padding: 0; font-size: 20px; font-weight: 400; }
+.dock .seg, .ov .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 9999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+.dock .seg .pill, .ov .seg .btn { min-height: 36px; padding: 7px 16px; border-color: transparent; background: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; margin: 0; border-radius: 9999px; }
+.dock .seg .pill:hover, .ov .seg .btn:hover { border-color: rgba(255,255,255,.18); }
+.dock .seg .pill[aria-pressed="true"] { background: rgba(255,255,255,.12) !important; border-color: transparent; color: var(--paper); }
+.dock .chip { --c: 208,214,224; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 6px 14px; border-radius: 9999px; border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  color: var(--paper); font: 500 12px/1 var(--mono); cursor: pointer; transition: border-color .2s, box-shadow .25s, background-color .2s, opacity .2s; }
+.dock .chip .cdot { width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--c)); box-shadow: 0 0 6px rgba(var(--c),.8); }
+.dock .chip[aria-pressed="true"] { background: rgba(var(--c),.16); border-color: rgba(var(--c),.5); }
+.dock .chip[aria-pressed="false"] { opacity: .5; }
+.dock .chip:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 16px rgba(var(--c),.45); animation: springy .35s cubic-bezier(.34,1.56,.64,1) both; }
+.dock .chip:active { transform: scale(.96); animation: none; }
+.dock .chip:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 2px; }
+/* Bottom-right group: icon + label buttons, like the menu's triangle entries but with small glowing
+   wireframe cubes (drawn on a canvas in each button by cubeIcons). No pill background. */
+.pill.cubebtn, .chip.cubebtn, .seg.cubeseg { background: transparent !important; border: 0; box-shadow: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.seg.cubeseg { padding: 0; gap: 4px; }
+.pill.cubebtn, .chip.cubebtn { --c: 208,214,224; min-height: 40px; padding: 4px 10px 4px 2px; gap: 6px; border-radius: 10px; color: var(--fog);
+  font: 500 14px/1 var(--sans); animation: none !important; transform: none; text-shadow: 0 1px 8px rgba(8,9,10,.9); }
+.chip.cubebtn { font: 500 13px/1 var(--mono); }
+.pill.cubebtn > span, .chip.cubebtn > span.lbl { display: inline-block; transition: transform .25s cubic-bezier(.34,1.56,.64,1), color .2s; }
+.pill.cubebtn:hover > span, .chip.cubebtn:hover > span.lbl { transform: translateY(-2px); color: var(--paper); }
+.pill.cubebtn:hover, .chip.cubebtn:hover { color: var(--paper); }
+.pill.cubebtn[aria-pressed="true"], .chip.cubebtn[aria-pressed="true"] { color: var(--paper); background: transparent !important; }
+.dock .seg.cubeseg .pill[aria-pressed="true"] { background: transparent !important; }
+.chip.cubebtn[aria-pressed="false"] { opacity: .55; }
+.pill.cubebtn:focus-visible, .chip.cubebtn:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 0; }
+.pill.cubebtn:active, .chip.cubebtn:active { transform: none; }
+.cube { width: 30px; height: 30px; flex: none; display: block; pointer-events: none; }
+.chip .cube { width: 26px; height: 26px; }
+.chip .cdot { display: none; }
+@media (prefers-reduced-motion: reduce) { .dock-right .pill > span, .dock-right .chip > span.lbl { transition: color .2s; } .dock-right .pill:hover > span, .dock-right .chip:hover > span.lbl { transform: none; } }
+.handle { border-radius: 9999px 0 0 9999px; height: 64px; width: 22px; background: rgba(255,255,255,.04); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-color: rgba(255,255,255,.12); }
+@media (prefers-reduced-motion: reduce) { .pill:hover, .ov .btn:hover, .dock .chip:hover { animation: none; } .pill:active, .ov .btn:active, .dock .chip:active { transform: none; } }
+
+/* ---------- Menu overlay ---------- */
+.stage { transition: filter .35s ease; }
+.stage.dimmed { filter: brightness(.4) blur(3px); }
+.ov { position: fixed; inset: 0; z-index: 20; overflow-y: auto; overscroll-behavior: contain; background: rgba(8,9,10,.72); opacity: 0; transition: opacity .3s ease; }
+.ov[hidden] { display: none; }
+.ov.open { opacity: 1; }
+.ov.closing { transition-duration: .18s; }
+.ovfx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.ovclose { position: fixed; z-index: 2; top: max(16px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
+.ov-home { position: relative; min-height: 100%; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: center; gap: 32px;
+  padding: 88px max(32px, 6vw) 64px; }
+.ov-home[hidden], .ov-sec[hidden], .sec[hidden] { display: none; }
+.ov-head { grid-column: 2; grid-row: 1; align-self: center; }
+.ov-head h2 { font-size: clamp(48px, 7vw, 80px); font-weight: 400; letter-spacing: -0.04em; line-height: 1; color: var(--paper); }
+.ov-head p { margin: 16px 0 0; color: var(--fog); font-size: 16px; max-width: 40ch; }
+.ov-list { grid-column: 1; grid-row: 1; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 28px; }
+.ov-list li { margin-left: calc(var(--i) * clamp(24px, 5vw, 72px)); }
+.ov-list li[hidden] { display: none; }
+.ov-item { display: flex; align-items: center; gap: 20px; background: none; border: 0; padding: 6px 12px 6px 0; color: inherit; cursor: pointer; text-align: left; border-radius: 12px; }
+.ov-item:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 4px; }
+.ico { display: block; width: 60px; height: 60px; flex: none; }
+.ico.big { width: 76px; height: 76px; }
+.ov-item .txt { display: flex; flex-direction: column; gap: 4px; }
+.ov-item b { font-size: 22px; font-weight: 500; color: var(--paper); letter-spacing: -0.015em; transition: color .2s; }
+.ov-item small { font-size: 14px; color: var(--fog); }
+.ov-item:hover b { color: #fff; text-shadow: 0 0 18px rgba(255,255,255,.35); }
+/* Entrance: headline fades up, each label follows its icon (90 ms stagger). */
+.ov-head, .ov-item .txt { opacity: 0; transform: translateX(-10px); transition: opacity .35s ease, transform .45s cubic-bezier(.22,.61,.36,1); }
+.ov-head { transform: translateY(10px); }
+.ov.open .ov-head { opacity: 1; transform: none; transition-delay: .1s; }
+.ov.open .ov-item .txt { opacity: 1; transform: none; transition-delay: calc(var(--i, 0) * 90ms + 220ms); }
+.ov.closing .ov-head, .ov.closing .ov-item .txt { transition-delay: 0s !important; transition-duration: .15s; }
+.ov-home.leaving .ov-head, .ov-home.leaving .ov-item .txt { opacity: 0 !important; transition-delay: 0s !important; transition-duration: .2s; }
+/* One section at a time: black, white type, hairline dividers, no heavy cards. */
+.ov-sec { position: relative; box-sizing: border-box; max-width: 760px; margin: 0 auto; padding: 72px max(20px, 4vw) 64px; }
+.ov-back { background: none; border: 0; color: var(--fog); font: 500 14px var(--sans); padding: 8px 0; cursor: pointer; }
+.ov-back:hover { color: var(--paper); }
+.ov-back:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 2px; border-radius: 4px; }
+.ov-sechead { display: flex; align-items: center; gap: 18px; margin: 16px 0 24px; }
+.ov-sechead h2 { font-size: clamp(32px, 5vw, 48px); font-weight: 400; letter-spacing: -0.03em; line-height: 1.05; }
+.ov-sec .ov-body, .ov-sechead h2 { opacity: 0; transform: translateY(8px); transition: opacity .35s ease .15s, transform .45s cubic-bezier(.22,.61,.36,1) .15s; }
+.ov-sec.shown .ov-body, .ov-sec.shown .ov-sechead h2 { opacity: 1; transform: none; }
+.sec { display: flex; flex-direction: column; gap: 16px; }
+@media (max-width: 760px) {
+  .ov-home { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 40px; padding-top: 80px; }
+  .ov-head { grid-column: 1; grid-row: 1; }
+  .ov-list { grid-column: 1; grid-row: 2; gap: 20px; }
+  .ov-list li { margin-left: 0; }
+  .ico { width: 52px; height: 52px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage, .ov, .ov-head, .ov-item .txt, .ov-sec .ov-body, .ov-sechead h2 { transition: none !important; }
+}
+.kline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.kline .n { font-weight: 510; font-size: 40px; line-height: 1; letter-spacing: -0.022em; color: var(--paper); font-variant-numeric: tabular-nums; }
+.kline .of { color: var(--fog); font-size: 13px; }
+.game { margin: 0; font-size: 13px; line-height: 1.6; color: var(--mist); }
+.game b { color: var(--paper); font-weight: 510; }
+.small { font-size: 13px; color: var(--fog); margin: 0; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.facts div { border-top: 1px solid var(--graphite); padding: 8px 0 0; }
+.facts .lab { font-size: 11px; color: var(--fog); }
+.facts .val { font-family: var(--mono); font-size: 16px; color: var(--paper); }
+.runs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; max-height: 420px; overflow-y: auto; font-size: 13px; }
+.runs li { display: grid; grid-template-columns: 48px 40px minmax(0,1fr); gap: 6px; align-items: center; padding: 5px 8px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; }
+.runs li:hover { background: var(--obsidian); }
+.runs li { border-radius: 0; border: 0; border-bottom: 1px solid var(--graphite); }
+.runs li.cur { background: rgba(255,255,255,.05); }
+.runs .bn { font-family: var(--mono); color: var(--ash); font-size: 12px; }
+.runs .k { font-family: var(--mono); font-size: 14px; color: var(--paper); }
+.runs .d { color: var(--fog); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seedrow { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.seedrow input { width: 120px; font-family: var(--mono); font-size: 13px; padding: 6px 8px; }
+#nGames { width: 96px; }
+.hist svg { width: 100%; height: auto; display: block; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tiles div { border-top: 1px solid var(--graphite); padding: 8px 0 0; }
+.tiles .lab { font-size: 11px; color: var(--fog); }
+.tiles .val { font-family: var(--mono); font-size: 18px; color: var(--paper); }
+.tiles .sub { font-size: 12px; color: var(--ash); }
+table.lines { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.lines th, table.lines td { padding: 6px 8px; border-bottom: 1px solid var(--graphite); text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+table.lines th:first-child, table.lines td:first-child { text-align: left; }
+table.lines th { font-family: var(--sans); font-size: 11px; color: var(--fog); font-weight: 400; }
+.empty { color: var(--fog); padding: 16px; border: 1px dashed var(--graphite); border-radius: 6px; text-align: center; font-size: 13px; }
+
+/* Factor rows: label, plain-English detail, and a diverging bar around zero. */
+.factors { display: flex; flex-direction: column; border-top: 1px solid var(--graphite); }
+.frow { display: grid; grid-template-columns: minmax(0, 1fr) 60px; gap: 2px 12px; align-items: center; padding: 12px 10px; border-bottom: 1px solid var(--graphite); }
+.frow.plus { background: rgba(39,166,68,.05); }
+.frow.minus { background: rgba(235,87,87,.05); }
+.frow .fl { font-size: 15px; color: var(--paper); font-weight: 510; min-width: 0; }
+.frow .fv { font-family: var(--mono); font-size: 13px; color: var(--paper); text-align: right; font-variant-numeric: tabular-nums; grid-row: span 2; }
+.frow.plus .fv { color: #5fd17a; } .frow.minus .fv { color: #f08a8a; }
+.frow .fd { font-size: 13px; color: var(--fog); line-height: 1.4; min-width: 0; }
+.frow .fbar { grid-column: 1 / -1; position: relative; height: 4px; margin-top: 4px; border-radius: 2px; background: rgba(255,255,255,.04); }
+.frow .fbar::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--smoke); }
+.frow .fbar span { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+.frow.plus .fbar span { background: #27a644; } .frow.minus .fbar span { background: #eb5757; }
+.frow.total { border-bottom: 0; border-top: 1px solid var(--smoke); }
+.frow.total .fl, .frow.total .fv { font-size: 14px; }
+</style>
+
+<section class="menu" id="menu" hidden aria-labelledby="menuTitle">
+  <canvas class="ballfx" id="ballfx" aria-hidden="true"></canvas>
+  <div class="menu-inner" id="menuInner">
+    <div class="menu-head">
+      <span class="eyebrow">2026 starters · model matchups</span>
+      <h1 id="menuTitle">Strikeout Sim</h1>
+      <p>Pick a pitcher and the team he faces. The model predicts his strikeouts for that matchup, then the sim plays the start pitch by pitch.</p>
+    </div>
+    <div class="menu-card">
+      <div class="menu-fields">
+        <div class="field">
+          <label for="menuPitcherInput">Pitcher</label>
+          <div class="combo" data-cube="128,82,255" data-shape="tetra">
+            <input id="menuPitcherInput" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="menuPitcherList" autocomplete="off" spellcheck="false" placeholder="Search pitchers">
+            <ul class="combo-list" id="menuPitcherList" role="listbox" aria-label="Pitchers" hidden></ul>
+          </div>
+          <select id="menuPitcher" hidden aria-hidden="true" tabindex="-1"></select>
+        </div>
+        <div class="field">
+          <label for="menuOppInput">Opponent</label>
+          <div class="combo" data-cube="43,179,160" data-shape="tetra">
+            <input id="menuOppInput" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="menuOppList" autocomplete="off" spellcheck="false" placeholder="Search teams">
+            <ul class="combo-list" id="menuOppList" role="listbox" aria-label="Teams" hidden></ul>
+          </div>
+          <select id="menuOpp" hidden aria-hidden="true" tabindex="-1"></select>
+        </div>
+      </div>
+      <div class="menu-side" id="menuSide">
+        <span class="flabel" id="sideLab">Venue</span>
+        <div class="seg cubeseg" role="group" aria-labelledby="sideLab">
+          <button class="pill cubebtn" type="button" data-side="h" aria-pressed="true" data-cube="43,179,160"><span>Home</span></button>
+          <button class="pill cubebtn" type="button" data-side="a" aria-pressed="false" data-cube="255,184,41"><span>Away</span></button>
+        </div>
+        <span class="where" id="menuWhere"></span>
+      </div>
+      <div class="preview" id="menuPreview" aria-live="polite"></div>
+      <div class="menu-actions">
+        <p class="menu-note" id="menuNote"></p>
+        <button class="pill primary" id="menuGo" type="button">Load matchup</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="simview" id="simView" hidden>
+  <div class="stage" id="stage">
+    <canvas id="scene" aria-label="3D view of the simulated strikeout pitches. Drag to orbit, scroll or pinch to zoom, right-drag or two-finger drag to pan."></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="plist" id="plist" hidden aria-label="Strikeout pitches in order"></div>
+    <div class="caption" id="caption"></div>
+    <div class="umpsum" id="umpsum" hidden></div>
+    <div class="topbar" id="topbar">
+      <div class="brand">
+        <button class="btn ghost" id="backBtn" type="button" hidden>← Change matchup</button>
+        <div class="titles panel">
+          <h1 id="simTitle">Strikeout Sim</h1>
+          <p id="simSub">Each simulated start, shown as its strikeout pitches.</p>
+        </div>
+        <div class="picks panel" id="picks">
+          <div class="pick">
+            <label for="pitcherSel">Pitcher</label>
+            <select id="pitcherSel"></select>
+          </div>
+          <div class="pick">
+            <label for="teamSel" id="teamLab">Team</label>
+            <select id="teamSel"></select>
+          </div>
+        </div>
+      </div>
+      <div class="hud">
+        <div class="grp panel"><span><span class="lab">Batter</span><span class="val" id="hBatter">1</span></span><span><span class="lab">Count</span><span class="val" id="hCount">0-0</span></span><span><span class="lab">Pitches</span><span class="val" id="hPitches">0</span></span></div>
+        <div class="grp panel"><span><span class="lab">K</span><span class="val kval" id="hK">0</span></span><span><span class="lab">Model</span><span class="val" id="hModel">6.4</span></span></div>
+      </div>
+    </div>
+    <div class="dock" id="dock">
+      <button class="pill primary" id="redoBtn" type="button" title="Same model inputs, new random game">Redo simulation</button>
+      <div class="dock-right">
+        <div class="chips" id="chips" hidden></div>
+        <div class="seg cubeseg" role="group" aria-label="View">
+          <button class="pill cubebtn" type="button" data-view="pitch" aria-pressed="true" data-cube="43,179,160"><span>Mound</span></button>
+          <button class="pill cubebtn" type="button" data-view="ump" aria-pressed="false" data-cube="255,184,41"><span>Umpire</span></button>
+        </div>
+        <button class="pill cubebtn" id="resetView" type="button" title="Back to this view's camera" data-cube="150,156,166"><span>Reset view</span></button>
+        <button class="pill cubebtn" id="menuBtn" type="button" aria-controls="ov" aria-expanded="false" aria-haspopup="dialog" data-cube="128,82,255"><span>Menu</span></button>
+      </div>
+    </div>
+    <div class="tip" id="tip" hidden></div>
+    <button class="handle" id="menuHandle" type="button" aria-controls="ov" aria-expanded="false" aria-label="Open menu">‹</button>
+  </div>
+
+  <!-- Full-screen menu over the sim: an overview of entries with glowing tetra icons, then one section at a time. -->
+  <div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="ovTitle" hidden>
+    <canvas class="ovfx" id="ovfx" aria-hidden="true"></canvas>
+    <button class="pill icon ovclose" id="ovClose" type="button" aria-label="Close menu">×</button>
+    <div class="ov-home" id="ovHome">
+      <div class="ov-head">
+        <h2 id="ovTitle">Menu</h2>
+        <p id="ovSub"></p>
+      </div>
+      <ul class="ov-list">
+        <li style="--i:0" id="entFactors"><button class="ov-item" type="button" data-sec="factors"><span class="ico" data-ico="0"></span><span class="txt"><b>Details</b><small>What moved the prediction</small></span></button></li>
+        <li style="--i:1"><button class="ov-item" type="button" data-sec="run"><span class="ico" data-ico="1"></span><span class="txt"><b>This run</b><small id="entRunSub">The start you're watching</small></span></button></li>
+        <li style="--i:2"><button class="ov-item" type="button" data-sec="runs"><span class="ico" data-ico="2"></span><span class="txt"><b>Runs</b><small id="entRunsSub">History and seed replay</small></span></button></li>
+        <li style="--i:3"><button class="ov-item" type="button" data-sec="batch"><span class="ico" data-ico="3"></span><span class="txt"><b>Run many games</b><small>Histogram and over/under lines</small></span></button></li>
+      </ul>
+    </div>
+    <div class="ov-sec" id="ovSec" hidden>
+      <button class="ov-back" id="ovBack" type="button">← Menu</button>
+      <div class="ov-sechead"><span class="ico big" id="secIco"></span><h2 id="secTitle"></h2></div>
+      <div class="ov-body">
+        <section class="sec" id="secFactors" data-sec="factors" hidden>
+
+          <p class="small" id="factorNote"></p>
+          <div class="factors" id="factors"></div>
+        </section>
+        <section class="sec" id="secRun" data-sec="run" hidden>
+
+          <p class="game" id="kGame"></p>
+          <div class="kline"><span class="n" id="kNow">0</span><span class="of" id="kOf">strikeouts · model 6.4</span></div>
+          <p class="small" id="kDetail">Strike three only: every pitch shown is a strikeout.</p>
+          <div class="facts">
+            <div><div class="lab">Pred K</div><div class="val" id="fK">–</div></div>
+            <div><div class="lab">Pred BF</div><div class="val" id="fBF">–</div></div>
+            <div><div class="lab">K / BF</div><div class="val" id="fKR">–</div></div>
+          </div>
+        </section>
+        <section class="sec" id="secRuns" data-sec="runs" hidden>
+
+          <p class="small" id="runSummary"></p>
+          <ul class="runs" id="runs"></ul>
+          <div class="seedrow">
+            <label class="small" for="seedInput">Seed</label>
+            <input id="seedInput" type="text" inputmode="numeric" autocomplete="off">
+            <button class="btn" id="seedBtn" type="button">Replay seed</button>
+          </div>
+        </section>
+        <section class="sec" id="secBatch" data-sec="batch" hidden>
+
+          <p class="small">Plays many starts instantly with the same simulation, then shows how the strikeouts spread out.</p>
+          <div class="bar">
+            <input id="nGames" type="number" min="10" max="100000" step="10" value="1000" aria-label="Number of games">
+            <div class="seg" role="group" aria-label="Presets">
+              <button class="btn" type="button" data-n="100">100</button>
+              <button class="btn" type="button" data-n="1000">1k</button>
+              <button class="btn" type="button" data-n="10000">10k</button>
+            </div>
+            <button class="btn" id="runBtn" type="button">Run</button>
+          </div>
+          <div class="bar">
+            <button class="btn" id="watchRandom" type="button" disabled>Watch a random game</button>
+            <button class="btn" id="watchMedian" type="button" disabled>Watch the median</button>
+          </div>
+          <div id="batchOut"><div class="empty">The histogram, over/under lines and averages show here.</div></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   1. DATA: sample pitchers, and turning loaded JSON into pitcher objects
+   ===================================================================== */
+const SAMPLE_DATA = [
+  { pitcher: "Sample Pitcher", hand: "R", opponent: "SEA", pred_k: 6.4, pred_bf: 23.1, k_rate: 0.277,
+    pitch_mix: [
+      { type: "4-Seam Fastball", usage: 0.45, velo_mean: 96.2, velo_sd: 0.9 },
+      { type: "Slider", usage: 0.30, velo_mean: 87.5, velo_sd: 1.1 },
+      { type: "Changeup", usage: 0.15, velo_mean: 88.9, velo_sd: 1.0 },
+      { type: "Curveball", usage: 0.10, velo_mean: 80.3, velo_sd: 1.2 } ] },
+  { pitcher: "Sample Lefty", hand: "L", opponent: "HOU", pred_k: 5.1, pred_bf: 22.4, k_rate: 0.228,
+    pitch_mix: [
+      { type: "4-Seam Fastball", usage: 0.38, velo_mean: 93.4, velo_sd: 1.0 },
+      { type: "Sweeper", usage: 0.27, velo_mean: 82.1, velo_sd: 1.2 },
+      { type: "Changeup", usage: 0.22, velo_mean: 84.6, velo_sd: 1.1 },
+      { type: "Cutter", usage: 0.13, velo_mean: 89.0, velo_sd: 0.9 } ],
+    probs: { "3+": 0.88, "4+": 0.74, "5+": 0.56, "6+": 0.37, "7+": 0.21, "8+": 0.10, "9+": 0.04 } },
+  { pitcher: "Sample Sinkerballer", hand: "R", opponent: "NYY", pred_k: 3.9, pred_bf: 24.0, k_rate: 0.163,
+    pitch_mix: [
+      { type: "Sinker", usage: 0.48, velo_mean: 94.1, velo_sd: 0.8 },
+      { type: "Slider", usage: 0.24, velo_mean: 85.3, velo_sd: 1.0 },
+      { type: "Split-Finger", usage: 0.16, velo_mean: 86.7, velo_sd: 1.1 },
+      { type: "4-Seam Fastball", usage: 0.12, velo_mean: 94.8, velo_sd: 0.8 } ] },
+];
+
+// Pitch kinds: name, family, late movement seen from behind the pitcher (feet; +x arm side, +y up),
+// spin axis (world, before mirroring for lefties) and spin turns shown per flight.
+const PITCH_KINDS = {
+  FF: { name: "4-Seam Fastball", fam: "fb",   move: [0.45, 0.55],  axis: [-1, 0.1, 0],  turns: 7 },
+  SI: { name: "Sinker",          fam: "fb",   move: [1.15, -0.55], axis: [-0.7, 0.7, 0], turns: 6 },
+  FC: { name: "Cutter",          fam: "fb",   move: [-0.45, 0.05], axis: [-0.5, 0, 0.85], turns: 6 },
+  SL: { name: "Slider",          fam: "brk",  move: [-1.05, -0.45], axis: [0.2, 0, 1],   turns: 5 },
+  ST: { name: "Sweeper",         fam: "brk",  move: [-1.7, -0.25], axis: [0, 1, 0.3],   turns: 6 },
+  SV: { name: "Slurve",          fam: "brk",  move: [-1.2, -1.0],  axis: [0.7, 0.5, 0.3], turns: 6 },
+  CU: { name: "Curveball",       fam: "brk",  move: [-0.65, -1.7], axis: [1, 0, 0],     turns: 6 },
+  KC: { name: "Knuckle Curve",   fam: "brk",  move: [-0.55, -1.6], axis: [1, 0, 0.1],   turns: 6 },
+  CH: { name: "Changeup",        fam: "soft", move: [1.0, -0.95],  axis: [-0.7, 0.7, 0], turns: 4.5 },
+  FS: { name: "Split-Finger",    fam: "soft", move: [0.45, -1.25], axis: [-0.6, 0.3, 0], turns: 2.5 },
+  SC: { name: "Screwball",       fam: "soft", move: [1.2, -0.9],   axis: [-0.5, 0.8, 0], turns: 5 },
+  KN: { name: "Knuckleball",     fam: "soft", move: [0.3, -0.6],   axis: [0, 1, 0],     turns: 0.4 },
+  EP: { name: "Eephus",          fam: "soft", move: [0.0, -1.8],   axis: [-1, 0, 0],    turns: 3 },
+  OT: { name: "Other",           fam: "fb",   move: [0.0, 0.0],    axis: [-1, 0, 0],    turns: 4 },
+};
+
+function pitchCode(name) {
+  const n = String(name || "").toLowerCase().trim();
+  if (/^(ff|si|fc|sl|st|sv|cu|kc|ch|fs|sc|kn|ep)$/.test(n)) return n.toUpperCase();
+  if (n.includes("4-seam") || n.includes("four") || n.includes("4 seam") || n === "fastball") return "FF";
+  if (n.includes("sink") || n.includes("two") || n.includes("2-seam")) return "SI";
+  if (n.includes("cut")) return "FC";
+  if (n.includes("sweep")) return "ST";
+  if (n.includes("slurve")) return "SV";
+  if (n.includes("slider")) return "SL";
+  if (n.includes("knuckle c") || n.includes("knuckle-c")) return "KC";
+  if (n.includes("curve")) return "CU";
+  if (n.includes("change")) return "CH";
+  if (n.includes("split") || n.includes("fork")) return "FS";
+  if (n.includes("screw")) return "SC";
+  if (n.includes("knuckle")) return "KN";
+  if (n.includes("eephus")) return "EP";
+  if (n.includes("fast")) return "FF";
+  return "OT";
+}
+
+const GENERIC_MIX = [
+  { type: "4-Seam Fastball", usage: 0.5, velo_mean: 94, velo_sd: 1 },
+  { type: "Slider", usage: 0.25, velo_mean: 85.5, velo_sd: 1.1 },
+  { type: "Changeup", usage: 0.15, velo_mean: 86, velo_sd: 1.1 },
+  { type: "Curveball", usage: 0.10, velo_mean: 79, velo_sd: 1.2 },
+];
+
+function normalizePitcher(raw, i) {
+  const where = `Pitcher ${i + 1}`;
+  if (!raw || typeof raw !== "object") throw new Error(`${where} is not an object.`);
+  const name = String(raw.pitcher || raw.name || raw.pitcher_name || "").trim();
+  if (!name) throw new Error(`${where} has no "pitcher" name.`);
+  const bf = Number(raw.pred_bf);
+  if (!(bf > 0)) throw new Error(`${name} needs "pred_bf", a positive number of batters faced.`);
+  let kRate = Number(raw.k_rate);
+  const predK = raw.pred_k != null ? Number(raw.pred_k) : NaN;
+  if (!(kRate > 0 && kRate < 1)) {
+    if (predK >= 0) kRate = predK / bf;
+    else throw new Error(`${name} needs "k_rate" (0 to 1) or "pred_k".`);
+  }
+  kRate = Math.min(0.6, Math.max(0.02, kRate));
+  const mixIn = Array.isArray(raw.pitch_mix) && raw.pitch_mix.length ? raw.pitch_mix : GENERIC_MIX;
+  let mix = mixIn.map(m => {
+    const code = pitchCode(m.type);
+    return { type: String(m.type || PITCH_KINDS[code].name), code, usage: Math.max(0, Number(m.usage) || 0),
+      velo_mean: Number(m.velo_mean) || 90, velo_sd: Math.max(0.1, Number(m.velo_sd) || 1) };
+  }).filter(m => m.usage > 0);
+  if (!mix.length) mix = GENERIC_MIX.map(m => ({ ...m, code: pitchCode(m.type) }));
+  const total = mix.reduce((a, m) => a + m.usage, 0);
+  mix.forEach(m => { m.usage /= total; });
+  mix.sort((a, b) => b.usage - a.usage);
+  // Real strike-three pitches (from the export script), used for K pitch type and location.
+  const kPitches = Array.isArray(raw.k_pitches) ? raw.k_pitches.map(k => ({
+    type: String(k.type || ""), code: pitchCode(k.type), velo: Number(k.velo) || null,
+    px: Number(k.px), pz: Number(k.pz), looking: !!k.looking,
+  })).filter(k => Number.isFinite(k.px) && Number.isFinite(k.pz)) : [];
+  const hand = String(raw.hand || raw.p_throws || "R").toUpperCase().startsWith("L") ? "L" : "R";
+  return {
+    name, hand, team: String(raw.team || ""), opponent: String(raw.opponent || "OPP"), game_date: raw.game_date ? String(raw.game_date) : "",
+    pred_k: predK >= 0 ? predK : kRate * bf, pred_bf: bf, k_rate: kRate, mix, kPitches,
+    probs: raw.probs && typeof raw.probs === "object" ? raw.probs : null,
+    bfHistory: Array.isArray(raw.bf_history) ? raw.bf_history.map(Number).filter(x => x > 0) : null,
+    get bfHistMean() { const h = this.bfHistory || []; return h.length ? h.reduce((a, x) => a + x, 0) / h.length : 0; },
+    id: raw.pitcher_id != null ? String(raw.pitcher_id) : null,
+    actual_k: Number.isFinite(Number(raw.actual_k)) && raw.actual_k !== null && raw.actual_k !== "" ? Number(raw.actual_k) : null,
+  };
+}
+function parsePitchers(json) {
+  let list = json;
+  if (list && !Array.isArray(list) && Array.isArray(list.pitchers)) list = list.pitchers;
+  if (!Array.isArray(list)) list = [list];
+  if (!list.length) throw new Error("The JSON has no pitchers in it.");
+  return list.map(normalizePitcher);
+}
+
+/* =====================================================================
+   2. SIMULATION: pure functions, no drawing. A seed always replays the same game.
+
+   Swap points for a different model:
+     drawBattersFaced()  how many batters the starter faces
+     drawPAResult()      what each plate appearance ends in (K / BB / ball in play)
+     buildSequence()     the ball/strike path to that result
+     drawStrikeThree()   the strikeout pitch: type, speed, location, looking or swinging
+   ===================================================================== */
+function makeRng(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function randNormal(rng) { let u = 0; while (u === 0) u = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rng()); }
+function pickWeighted(rng, items, weightOf) {
+  const total = items.reduce((a, x) => a + weightOf(x), 0);
+  let r = rng() * total;
+  for (const x of items) { r -= weightOf(x); if (r <= 0) return x; }
+  return items[items.length - 1];
+}
+function randRange(rng, lo, hi) { return lo + (hi - lo) * rng(); }
+function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
+
+const SIM = {
+  BF_SD: 3.0, BF_MIN: 9, BF_MAX: 30,      // fallback: batters faced ~ Normal(pred_bf, 3), rounded, clamped
+  BF_HIST_MIN: 8, BF_HIST_LO: 3, BF_HIST_HI: 35,  // with 8+ real starts: resample his own BF, recentered
+  WALK_RATE: 0.08,                         // walks + hit batters per PA
+  HIT_RATE_IN_PLAY: 0.30,                  // hits per ball in play
+  ZONE: { left: -0.708, right: 0.708, bottom: 1.6, top: 3.5 },  // feet, catcher's view
+  BALL_R: 0.121,                           // ball radius, feet
+  // League-typical strike-three habits, used when a pitcher has no k_pitches data:
+  LOOKING_SHARE: 0.25,                     // share of strikeouts that are called third strikes
+  CHASE_SHARE: { fb: 0.38, brk: 0.64, soft: 0.66 },  // share of swinging Ks out of the zone, by pitch family
+  CALLED_OFF_PLATE: 0.12,                  // called third strikes just off the edge (framed)
+  K_WEIGHT: { fb: 1, brk: 1.6, soft: 1.55 }, // strike three skews to breaking and offspeed pitches
+};
+const PITCH_RATES = { B: 0.36, C: 0.17, S: 0.115, F: 0.18, X: 0.175 };
+
+// Batters faced: one of his real starts, shifted so the average is pred_bf (short outings and all), +-1 jitter.
+function drawBattersFaced(p, rng) {
+  const h = p.bfHistory;
+  if (h && h.length >= SIM.BF_HIST_MIN) {
+    const x = h[Math.floor(rng() * h.length)] - p.bfHistMean + p.pred_bf + (rng() * 2 - 1);
+    return clamp(Math.round(x), SIM.BF_HIST_LO, SIM.BF_HIST_HI);
+  }
+  return clamp(Math.round(p.pred_bf + SIM.BF_SD * randNormal(rng)), SIM.BF_MIN, SIM.BF_MAX);
+}
+function drawPAResult(p, rng) {
+  const u = rng();
+  if (u < p.k_rate) return "K";
+  if (u < p.k_rate + SIM.WALK_RATE) return "BB";
+  return "X";
+}
+// A ball/strike path that ends in the given result (rejection sampling on PITCH_RATES).
+function buildSequence(result, rng) {
+  const codes = Object.keys(PITCH_RATES);
+  for (let attempt = 0; attempt < 400; attempt++) {
+    const seq = []; let b = 0, s = 0;
+    while (true) {
+      const c = pickWeighted(rng, codes, k => PITCH_RATES[k]);
+      seq.push(c);
+      if (c === "B") b++; else if (c === "C" || c === "S") s++; else if (c === "F") { if (s < 2) s++; } else break;
+      if (b === 4 || s === 3 || seq.length > 14) break;
+    }
+    const got = seq[seq.length - 1] === "X" ? "X" : (b === 4 ? "BB" : (s === 3 ? "K" : null));
+    if (got === result) return seq;
+  }
+  return result === "K" ? ["C", "S", "S"] : result === "BB" ? ["B", "B", "B", "B"] : ["X"];
+}
+function inZone(px, pz) {
+  const Z = SIM.ZONE, r = SIM.BALL_R;
+  return Math.abs(px) <= Z.right + r && pz >= Z.bottom - r && pz <= Z.top + r;
+}
+function lookingShare(p) {
+  if (p.kPitches.length >= 15) return p.kPitches.filter(k => k.looking).length / p.kPitches.length;
+  return SIM.LOOKING_SHARE;
+}
+function veloFor(p, code, rng, fallback) {
+  const m = p.mix.find(x => x.code === code);
+  if (m) return Math.round((m.velo_mean + m.velo_sd * randNormal(rng)) * 10) / 10;
+  return Math.round(((fallback || 88) + 0.8 * randNormal(rng)) * 10) / 10;
+}
+
+// The strikeout pitch. With the pitcher's real strike-three pitches (k_pitches),
+// it resamples one of them (type and location, lightly jittered); otherwise it
+// uses the league habits in SIM, chases included.
+function drawStrikeThree(p, rng, looking) {
+  if (p.kPitches.length >= 15) {
+    let pool = p.kPitches.filter(k => k.looking === looking);
+    if (pool.length < 5) pool = p.kPitches;
+    const k = pool[Math.floor(rng() * pool.length)];
+    const px = k.px + 0.07 * randNormal(rng), pz = k.pz + 0.07 * randNormal(rng);
+    const mixType = p.mix.find(x => x.code === k.code);
+    return { type: mixType ? mixType.type : (k.type || PITCH_KINDS[k.code].name), kind: k.code,
+      velo: veloFor(p, k.code, rng, k.velo), loc: { px, pz }, source: "data" };
+  }
+  const m = pickWeighted(rng, p.mix, x => x.usage * SIM.K_WEIGHT[PITCH_KINDS[x.code].fam]);
+  const fam = PITCH_KINDS[m.code].fam;
+  const glove = p.hand === "R" ? 1 : -1;        // a righty's glove side is the catcher's right (+px)
+  let px, pz;
+  if (looking) {
+    if (rng() < SIM.CALLED_OFF_PLATE) {         // framed, just off the edge
+      if (rng() < 0.6) { px = (rng() < 0.5 ? -1 : 1) * randRange(rng, 0.84, 0.97); pz = randRange(rng, 1.8, 3.3); }
+      else { px = randRange(rng, -0.6, 0.6); pz = rng() < 0.6 ? randRange(rng, 1.36, 1.47) : randRange(rng, 3.63, 3.72); }
+    } else {                                    // on the corners and edges
+      const edgeX = rng() < 0.6;
+      px = edgeX ? (rng() < 0.5 ? -1 : 1) * randRange(rng, 0.4, 0.82) : randRange(rng, -0.5, 0.5);
+      pz = edgeX ? randRange(rng, 1.6, 3.5) : (rng() < 0.55 ? randRange(rng, 1.5, 2.0) : randRange(rng, 3.1, 3.6));
+    }
+  } else if (rng() < SIM.CHASE_SHARE[fam]) {    // chase: swung at out of the zone
+    if (fam === "fb") { px = randRange(rng, -0.7, 0.7); pz = randRange(rng, 3.7, 4.3); }
+    else if (rng() < 0.7) { px = randRange(rng, -0.6, 0.6) + 0.35 * glove; pz = randRange(rng, 0.7, 1.42); }
+    else { px = glove * randRange(rng, 0.9, 1.45); pz = randRange(rng, 1.0, 2.4); }
+  } else {                                      // swing and miss in the zone
+    px = randRange(rng, -0.65, 0.65);
+    pz = fam === "fb" ? randRange(rng, 2.9, 3.5) : randRange(rng, 1.55, 2.3);
+  }
+  return { type: m.type, kind: m.code, velo: veloFor(p, m.code, rng), loc: { px, pz }, source: "league" };
+}
+function drawPitchType(p, rng) { return pickWeighted(rng, p.mix, m => m.usage); }
+
+function simulateGame(p, seed) {
+  const rng = makeRng(seed);
+  const bfTarget = drawBattersFaced(p, rng);
+  const lookShare = lookingShare(p);
+  const game = { seed, bfTarget, pas: [], pitches: [], ks: [], k: 0, bb: 0, hits: 0, outsTotal: 0 };
+  let inning = 1, outs = 0;
+  for (let i = 0; i < bfTarget && game.outsTotal < 27; i++) {
+    const batterHand = rng() < (p.hand === "R" ? 0.48 : 0.30) ? "L" : "R";
+    const result = drawPAResult(p, rng);
+    const seq = buildSequence(result, rng);
+    const pa = { bf: i + 1, batterHand, result, inning, outsBefore: outs };
+    let b = 0, s = 0;
+    seq.forEach((code, j) => {
+      const last = j === seq.length - 1;
+      const pitch = { n: game.pitches.length + 1, bf: i + 1, batterHand, inning, balls: b, strikes: s, code };
+      if (last && result === "K") {
+        const looking = rng() < lookShare;
+        const k = drawStrikeThree(p, rng, looking);
+        Object.assign(pitch, k, { code: looking ? "C" : "S", isK: true, looking, chase: !looking && !inZone(k.loc.px, k.loc.pz) });
+        game.ks.push(pitch);
+      } else {
+        const m = drawPitchType(p, rng);
+        Object.assign(pitch, { type: m.type, kind: m.code, velo: veloFor(p, m.code, rng) });
+      }
+      if (code === "B") b++; else if (code === "C" || code === "S") s++; else if (code === "F" && s < 2) s++;
+      game.pitches.push(pitch);
+    });
+    if (result === "K") { game.k++; outs++; game.outsTotal++; }
+    else if (result === "BB") game.bb++;
+    else if (rng() < SIM.HIT_RATE_IN_PLAY) game.hits++;
+    else { outs++; game.outsTotal++; }
+    pa.kAfter = game.k;
+    if (outs === 3) { inning++; outs = 0; }
+    game.pas.push(pa);
+  }
+  game.bf = game.pas.length;
+  return game;
+}
+function runBatch(p, n, batchSeed) {
+  const rng = makeRng(batchSeed), games = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const seed = Math.floor(rng() * 4294967295) >>> 0;
+    const g = simulateGame(p, seed);
+    games[i] = { seed, k: g.k, pitches: g.pitches.length, bf: g.bf, chases: g.ks.filter(x => x.chase).length, swinging: g.ks.filter(x => !x.looking).length };
+  }
+  return games;
+}
+
+/* =====================================================================
+   3. 3D DRAWING: a small perspective camera over a 2D canvas.
+      World feet: x + = third-base side (screen right from behind the pitcher),
+      y up, z from the rubber toward home plate (front of the plate z = 59.8).
+   ===================================================================== */
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+const PLATE_Z = 59.8;
+const V = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  mul: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  norm: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; },
+  lerp: (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t],
+};
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t * t * (3 - 2 * t);
+const easeInOut = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+// Camera presets. "height" = how many feet of the scene fit vertically at the target.
+const CAM_MOUND = { pos: [2.0, 23.9, -183], target: [0, 0.6, PLATE_Z], height: 14.2 };
+const CAM_UMP = { pos: [0, 2.7, 76.5], target: [0, 2.55, PLATE_Z], height: 4.9 };
+const cam = { pos: CAM_MOUND.pos.slice(), target: CAM_MOUND.target.slice(), height: CAM_MOUND.height, r: [1, 0, 0], u: [0, 1, 0], f: [0, 0, 1], focal: 1 };
+function setCamera(c) {
+  cam.pos = c.pos; cam.target = c.target; cam.height = c.height;
+  if (!W || !H) return;
+  cam.f = V.norm(V.sub(c.target, c.pos));
+  cam.r = V.norm(V.cross([0, 1, 0], cam.f));
+  cam.u = V.cross(cam.f, cam.r);
+  const dist = Math.hypot(...V.sub(c.target, c.pos));
+  // Tall screens (phones) keep at least the width a 16:11 frame shows, instead of cropping the sides.
+  const height = Math.max(c.height, c.height * (16 / 11) * H / Math.max(1, W));
+  cam.focal = (H / 2) / ((height / 2) / dist);
+}
+
+// Orbit camera: yaw/pitch/distance around a target. The field of view follows the distance
+// (telephoto far out like the TV mound shot, wider up close like the umpire view), so the
+// presets sit on the same curve and zooming passes smoothly between them.
+const presetDist = c => Math.hypot(...V.sub(c.pos, c.target));
+const FOV = { d0: presetDist(CAM_UMP), t0: CAM_UMP.height / 2 / presetDist(CAM_UMP), d1: presetDist(CAM_MOUND), t1: CAM_MOUND.height / 2 / presetDist(CAM_MOUND) };
+function tanHalfAt(d) {
+  const u = clamp((Math.log(d) - Math.log(FOV.d0)) / (Math.log(FOV.d1) - Math.log(FOV.d0)), 0, 1);
+  return Math.exp(lerp(Math.log(FOV.t0), Math.log(FOV.t1), u));
+}
+// Limits: stay above the ground, between 4 and 650 ft from the target, and keep the target near the field.
+const ORBIT = { minDist: 4, maxDist: 650, minY: 0.8, maxPitch: 1.45, minPitch: -0.15, x: 220, yLo: 0, yHi: 60, zLo: -320, zHi: 200 };
+function orbitFrom(c) {
+  const d = V.sub(c.pos, c.target), dist = Math.hypot(...d) || 1;
+  return { target: c.target.slice(), dist, pitch: Math.asin(clamp(d[1] / dist, -1, 1)), yaw: Math.atan2(d[0], -d[2]) };
+}
+function camFromOrbit(o) {
+  const cp = Math.cos(o.pitch), off = [cp * Math.sin(o.yaw), Math.sin(o.pitch), -cp * Math.cos(o.yaw)];
+  return { pos: V.add(o.target, V.mul(off, o.dist)), target: o.target.slice(), height: 2 * o.dist * tanHalfAt(o.dist) };
+}
+function clampOrbit(o) {
+  o.dist = clamp(o.dist, ORBIT.minDist, ORBIT.maxDist);
+  o.target = [clamp(o.target[0], -ORBIT.x, ORBIT.x), clamp(o.target[1], ORBIT.yLo, ORBIT.yHi), clamp(o.target[2], ORBIT.zLo, ORBIT.zHi)];
+  const low = Math.asin(clamp((ORBIT.minY - o.target[1]) / o.dist, -1, 1));
+  o.pitch = clamp(o.pitch, Math.max(ORBIT.minPitch, low), ORBIT.maxPitch);
+  return o;
+}
+let orbit = orbitFrom(CAM_MOUND);
+// World point -> camera space [x, y, depth].
+function toCam(p) { const d = V.sub(p, cam.pos); return [V.dot(d, cam.r), V.dot(d, cam.u), V.dot(d, cam.f)]; }
+function scr(c) { return { x: W / 2 + cam.focal * c[0] / c[2], y: H / 2 - cam.focal * c[1] / c[2], s: cam.focal / c[2], z: c[2] }; }
+function proj(p) { const c = toCam(p); return c[2] > 0.3 ? scr(c) : null; }
+// Project a segment, clipped to the near plane.
+function projSeg(a, b) {
+  let ca = toCam(a), cb = toCam(b); const near = 0.5;
+  if (ca[2] < near && cb[2] < near) return null;
+  if (ca[2] < near) { const t = (near - ca[2]) / (cb[2] - ca[2]); ca = V.lerp(ca, cb, t); }
+  if (cb[2] < near) { const t = (near - cb[2]) / (ca[2] - cb[2]); cb = V.lerp(cb, ca, t); }
+  return [scr(ca), scr(cb)];
+}
+function resize() {
+  const r = canvas.getBoundingClientRect();
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = r.width; H = r.height;
+  canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+}
+
+const HOLO = "208,214,224";   // mist: the field, figures and lines are monochrome hologram strokes
+function line3(a, b, alpha, width = 1) {
+  const s = projSeg(a, b); if (!s) return;
+  ctx.strokeStyle = `rgba(${HOLO},${alpha})`; ctx.lineWidth = width;
+  ctx.beginPath(); ctx.moveTo(s[0].x, s[0].y); ctx.lineTo(s[1].x, s[1].y); ctx.stroke();
+}
+function poly3(pts, alpha, width = 1.2, closed = true) {
+  for (let i = 0; i < pts.length - (closed ? 0 : 1); i++) line3(pts[i], pts[(i + 1) % pts.length], alpha, width);
+}
+function ring(cx, cz, r, n = 64) { const pts = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; pts.push([cx + r * Math.cos(a), 0, cz + r * Math.sin(a)]); } return pts; }
+
+// The holographic field: grid floor, diamond, plate, boxes, mound and strike zone.
+function drawField(umpView, ts) {
+  const g = ctx.createRadialGradient(W / 2, H * 0.35, 0, W / 2, H * 0.35, Math.max(W, H));
+  g.addColorStop(0, "#111214"); g.addColorStop(1, "#08090a");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  drawStars(ts);
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  for (let x = -200; x <= 200; x += 10) line3([x, 0, -260], [x, 0, 140], x % 50 === 0 ? 0.09 : 0.045);
+  for (let z = -260; z <= 140; z += 10) line3([-200, 0, z], [200, 0, z], z % 50 === 0 ? 0.09 : 0.045);
+  // Diamond: home is the back tip of the plate (z 60.5); bases 90 ft apart.
+  const home = [0, 0, 60.5], first = [-63.64, 0, -3.14], second = [0, 0, -66.78], third = [63.64, 0, -3.14];
+  poly3([home, first, second, third], 0.28, 1.4);
+  line3(first, V.add(first, V.mul(V.norm(V.sub(first, home)), 240)), 0.22, 1.2);
+  line3(third, V.add(third, V.mul(V.norm(V.sub(third, home)), 240)), 0.22, 1.2);
+  [first, second, third].forEach(b => poly3([V.add(b, [-0.75, 0, -0.75]), V.add(b, [0.75, 0, -0.75]), V.add(b, [0.75, 0, 0.75]), V.add(b, [-0.75, 0, 0.75])], 0.5, 1.4));
+  poly3(ring(0, 1.5, 9), 0.3, 1.3); poly3(ring(0, 61.5, 13), 0.22, 1.2);
+  poly3([[-1, 0.01, -0.25], [1, 0.01, -0.25], [1, 0.01, 0.25], [-1, 0.01, 0.25]], 0.7, 1.5);
+  poly3([[-0.708, 0.01, 59.08], [0.708, 0.01, 59.08], [0.708, 0.01, 59.79], [0, 0.01, 60.5], [-0.708, 0.01, 59.79]], 0.85, 1.6);
+  [[1.2, 5.2], [-5.2, -1.2]].forEach(([x0, x1]) => poly3([[x0, 0.01, 57.3], [x1, 0.01, 57.3], [x1, 0.01, 63.3], [x0, 0.01, 63.3]], 0.35, 1.2));
+  // Strike zone box at the front of the plate (catcher's px mirrors to world x).
+  const Z = SIM.ZONE;
+  const zc = [[-Z.left, Z.top], [-Z.right, Z.top], [-Z.right, Z.bottom], [-Z.left, Z.bottom]].map(([x, y]) => [x, y, PLATE_Z]);
+  poly3(zc, umpView ? 0.75 : 0.6, umpView ? 1.6 : 1.3);
+  if (umpView) {
+    for (let i = 1; i < 3; i++) {
+      const x = -(Z.left + (Z.right - Z.left) * i / 3), y = Z.bottom + (Z.top - Z.bottom) * i / 3;
+      line3([x, Z.bottom, PLATE_Z], [x, Z.top, PLATE_Z], 0.18); line3([-Z.left, y, PLATE_Z], [-Z.right, y, PLATE_Z], 0.18);
+    }
+  }
+  ctx.restore();
+}
+
+// ---------- Constellation: small wireframe tetrahedrons in a shell around the field ----------
+// Real world positions drawn through the camera, so they parallax as it orbits, zooms or flies; each one
+// also spins slowly in 3D. Kept dim so the field and the lime ball stay the focus. Drawn in batches:
+// one path per colour and brightness step.
+const FX_COLORS = ["128,82,255", "255,184,41", "21,132,110", "43,179,160", "208,214,224", "224,64,154", "74,123,255"];
+const FX_WEIGHTS = [3, 2, 1.5, 2, 2, 0.7, 0.8];
+const FX_STEPS = 6;
+const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Regular tetrahedron with circumradius 1: 4 vertices, 6 edges.
+const TETRA = [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]].map(v => V.mul(v, 1 / Math.sqrt(3)));
+const tetraXY = new Float64Array(8);
+// Adds a wireframe tetrahedron centred at screen (x, y), r px to each corner, turned by a (about y) then b (about x).
+// Edges as two strokes: 0-1-2-0-3-1 and 2-3.
+function addTetra(path, x, y, r, a, b) {
+  const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+  for (let i = 0; i < 4; i++) {
+    const v = TETRA[i], x1 = v[0] * ca + v[2] * sa, z1 = -v[0] * sa + v[2] * ca;
+    tetraXY[2 * i] = x + x1 * r; tetraXY[2 * i + 1] = y - (v[1] * cb - z1 * sb) * r;
+  }
+  const P = tetraXY;
+  path.moveTo(P[0], P[1]); path.lineTo(P[2], P[3]); path.lineTo(P[4], P[5]); path.lineTo(P[0], P[1]); path.lineTo(P[6], P[7]); path.lineTo(P[2], P[3]);
+  path.moveTo(P[4], P[5]); path.lineTo(P[6], P[7]);
+}
+const pickColor = rng => pickWeighted(rng, FX_COLORS.map((_, i) => i), i => FX_WEIGHTS[i]);
+// The field is world-anchored, so moving the camera gives true parallax, and every tetra also flies on
+// its own (a shared drift plus its own heading) and tumbles. Two kinds:
+//  - "around": anywhere 6-250 ft from the camera in every direction (behind and above too), so turning
+//    always finds some, near ones large and soft;
+//  - "view": inside the current view out to about twice the target distance, scaled to the lens, so even
+//    the narrow mound and umpire lenses are full.
+// A tetra that leaves its region is respawned inside it, fading in, so nothing pops and the field never empties.
+// Flight speed is set in screen terms (px/s at its depth), so it reads the same through every lens.
+const stars = { list: [], n: 2500, slow: 0, last: 0, ready: false };
+(function makeStars() {
+  const rng = makeRng(20261020), drift = V.norm([0.55, 0.12, -0.83]);
+  for (let i = 0; i < 2500; i++) {
+    const jit = V.norm([rng() * 2 - 1, rng() * 2 - 1, rng() * 2 - 1]);
+    stars.list.push({   // 40% around the camera, 60% in the view
+      around: i % 5 < 2, col: pickColor(rng), base: 3 + 4 * rng(), a: 0.18 + 0.42 * rng(),
+      ra: rng() * 6.28, rb: rng() * 6.28, sa: (rng() - 0.5) * 0.9, sb: (rng() - 0.5) * 0.9,
+      tw: 0.3 + 0.7 * rng(), ph: rng() * 6.28, dir: V.norm(V.add(V.mul(drift, 0.75), V.mul(jit, 0.6))), spd: 8 + 26 * rng(),
+      p: [0, 0, 0], ws: 0, born: -1e9,
+    });
+  }
+})();
+const smooth = (e0, e1, x) => { const u = clamp((x - e0) / (e1 - e0), 0, 1); return u * u * (3 - 2 * u); };
+function viewRange() { const D = Math.hypot(...V.sub(cam.target, cam.pos)); return { near: Math.max(4, 0.15 * D), far: 2.2 * D + 40 }; }
+function spawnStar(s, t, fresh) {
+  const F = cam.focal, ax = W / 2 / F, ay = H / 2 / F;
+  if (s.around) {
+    const r = 6 + 244 * Math.random(), u = Math.random() * 2 - 1, th = Math.random() * 6.283, q = Math.sqrt(1 - u * u);
+    s.p = V.add(cam.pos, V.mul([q * Math.cos(th), u, q * Math.sin(th)], r));
+    s.ws = s.base * (1 + 40 / r) * r / F;   // nearer ones are bigger
+  } else {
+    const { near, far } = viewRange(), z = near + (far - near) * Math.random();
+    const x = (Math.random() * 2 - 1) * ax * z * 1.5, y = (Math.random() * 2 - 1) * ay * z * 1.5;   // a margin, so turning finds some already there
+    s.p = V.add(cam.pos, V.add(V.add(V.mul(cam.r, x), V.mul(cam.u, y)), V.mul(cam.f, z)));
+    s.ws = s.base * z / F;
+  }
+  s.born = fresh ? -1e9 : t;
+}
+// Distance from point p to segment a-b, and how far along it (0-1).
+function segDist(p, a, b) {
+  const ab = V.sub(b, a), u = clamp(V.dot(V.sub(p, a), ab) / V.dot(ab, ab), 0, 1);
+  return [Math.hypot(...V.sub(p, V.add(a, V.mul(ab, u)))), u];
+}
+function drawStars(ts) {
+  if (!W || !H) return;
+  const still = reducedMotion(), t = ts / 1000, dt = stars.last ? Math.min(0.1, t - stars.last) : 0;
+  stars.last = t;
+  if (!stars.ready) { stars.list.forEach(s => spawnStar(s, t, true)); stars.ready = true; }
+  const paths = new Array(FX_COLORS.length * FX_STEPS), big = [];
+  const [px, py, pz] = cam.pos, [rx, ry, rz] = cam.r, [ux, uy, uz] = cam.u, [fx, fy, fz] = cam.f, F = cam.focal;
+  const ax = W / 2 / F, ay = H / 2 / F, { near, far } = viewRange();
+  // Keep the pitch clear: fade tetras near the release-to-plate path and the camera's line to the zone.
+  const hand = state.p && state.p.hand === "L" ? -1 : 1, rel = [1.6 * hand, 5.8, 6], plate = [0, 2.5, PLATE_Z];
+  const tt = still ? 0 : t;
+  for (let i = 0; i < stars.n; i++) {
+    const s = stars.list[i];
+    let dx = s.p[0] - px, dy = s.p[1] - py, dz = s.p[2] - pz, dist = Math.hypot(dx, dy, dz);
+    if (!still && dt > 0) {
+      const step = s.spd * dt * Math.max(1, dist) / F;
+      s.p[0] += s.dir[0] * step; s.p[1] += s.dir[1] * step; s.p[2] += s.dir[2] * step;
+      dx = s.p[0] - px; dy = s.p[1] - py; dz = s.p[2] - pz; dist = Math.hypot(dx, dy, dz);
+    }
+    const z = dx * fx + dy * fy + dz * fz, cx = dx * rx + dy * ry + dz * rz, cy = dx * ux + dy * uy + dz * uz;
+    const gone = s.around ? dist > 270 || dist < 3
+      : z < near * 0.5 || z > far * 1.3 || Math.abs(cx) > ax * z * 1.7 || Math.abs(cy) > ay * z * 1.7;
+    if (gone) { spawnStar(s, t, false); continue; }
+    if (z < 1) continue;
+    const x = W / 2 + F * cx / z, y = H / 2 - F * cy / z, size = s.ws * F / z;
+    if (x < -size || x > W + size || y < -size || y > H + size) continue;
+    let a = s.a * (0.8 + 0.2 * Math.sin(tt * s.tw + s.ph)) * smooth(0, 0.45, t - s.born);
+    a *= s.around ? smooth(4, 10, dist) * (1 - smooth(210, 260, dist)) : smooth(near * 0.5, near, z) * (1 - smooth(far, far * 1.3, z));
+    a *= 1 - smooth(60, 110, size);
+    if (a < 0.03) continue;
+    const [d1] = segDist(s.p, rel, plate), [d2, u2] = segDist(s.p, cam.pos, plate), r2 = 1 + 0.06 * u2 * Math.hypot(pz - plate[2], py - plate[1], px);
+    a *= smooth(1.5, 5, d1) * smooth(r2, r2 * 2.5, d2);
+    if (a < 0.03) continue;
+    const ra = s.ra + tt * s.sa, rb = s.rb + tt * s.sb;
+    if (size > 16) { big.push({ x, y, size, a, ra, rb, col: s.col }); continue; }
+    const k = s.col * FX_STEPS + clamp(Math.floor((a - 0.15) / 0.45 * FX_STEPS), 0, FX_STEPS - 1);
+    addTetra(paths[k] || (paths[k] = new Path2D()), x, y, Math.max(1.5, size / 2), ra, rb);
+  }
+  ctx.save(); ctx.lineWidth = 1; ctx.lineJoin = "round";
+  paths.forEach((path, k) => {
+    if (!path) return;
+    ctx.strokeStyle = `rgba(${FX_COLORS[Math.floor(k / FX_STEPS)]},${0.15 + ((k % FX_STEPS) + 0.5) / FX_STEPS * 0.45})`;   // alpha 0.15-0.6
+    ctx.stroke(path);
+  });
+  // Near, large ones: softer (glow, lower alpha), like out-of-focus foreground.
+  ctx.lineWidth = 1.4;
+  big.sort((m, n) => n.size - m.size).forEach((b, i) => {
+    const path = new Path2D(), col = FX_COLORS[b.col], a = b.a * 0.45;
+    addTetra(path, b.x, b.y, b.size / 2, b.ra, b.rb);
+    ctx.shadowBlur = i < 40 ? 10 : 0; ctx.shadowColor = `rgba(${col},${Math.min(1, a * 2)})`;
+    ctx.strokeStyle = `rgba(${col},${a})`; ctx.stroke(path);
+  });
+  ctx.restore();
+}
+
+// ---------- 3D hologram figures ----------
+function lerpPose(A, B, t) { const out = {}, u = ease(clamp(t, 0, 1)); for (const k in A) out[k] = V.lerp(A[k], B[k], u); return out; }
+function mirrorPose(P, sign, dx = 0) { const out = {}; for (const k in P) out[k] = [P[k][0] * sign + dx, P[k][1], P[k][2]]; return out; }
+// Pitcher from behind; t = throwing side, g = glove side. Right-hander coordinates.
+const P_SET = { head: [0, 5.75, 0.2], tSho: [0.7, 5.0, 0.1], gSho: [-0.7, 5.0, 0.1], tElb: [0.75, 4.2, 0.5], gElb: [-0.75, 4.2, 0.5], tHand: [0.12, 4.05, 0.8], gHand: [-0.12, 4.05, 0.8], hip: [0, 3.2, 0], tKnee: [0.45, 1.7, 0], gKnee: [-0.45, 1.7, 0.2], tFoot: [0.5, 0, 0], gFoot: [-0.55, 0, 0.3] };
+const P_LIFT = { head: [0.05, 5.8, 0], tSho: [0.7, 5.0, 0], gSho: [-0.6, 5.05, 0], tElb: [0.7, 4.3, 0.4], gElb: [-0.6, 4.3, 0.6], tHand: [0.1, 4.4, 0.9], gHand: [-0.1, 4.4, 0.9], hip: [0.1, 3.3, 0], tKnee: [0.4, 1.8, 0], gKnee: [-0.2, 3.8, 0.9], tFoot: [0.5, 0, 0], gFoot: [-0.35, 2.6, 0.6] };
+const P_STRIDE = { head: [0.1, 5.2, 2.2], tSho: [0.8, 4.7, 1.6], gSho: [-0.6, 4.6, 2.6], tElb: [1.5, 4.9, 1.0], gElb: [-1.3, 4.7, 3.2], tHand: [1.6, 5.8, 0.6], gHand: [-1.5, 4.3, 3.8], hip: [0.05, 2.9, 1.8], tKnee: [0.6, 1.5, 0.6], gKnee: [-0.4, 1.8, 4.0], tFoot: [0.5, 0.1, 0], gFoot: [-0.4, 0, 5.0] };
+const P_REL = { head: [-0.05, 5.0, 3.6], tSho: [0.7, 4.8, 3.4], gSho: [-0.7, 4.4, 3.6], tElb: [1.2, 5.4, 4.8], gElb: [-0.9, 3.8, 3.9], tHand: [1.6, 5.8, 6.0], gHand: [-0.6, 3.6, 3.4], hip: [0, 2.8, 3.0], tKnee: [0.5, 1.4, 1.8], gKnee: [-0.35, 1.8, 4.6], tFoot: [0.4, 0.5, 0.8], gFoot: [-0.4, 0, 5.0] };
+const P_FOLLOW = { head: [-0.3, 4.4, 4.3], tSho: [0.4, 4.1, 4.4], gSho: [-0.9, 3.9, 4.0], tElb: [-0.2, 3.6, 5.2], gElb: [-1.0, 3.3, 3.6], tHand: [-0.9, 2.6, 4.8], gHand: [-0.6, 3.2, 3.2], hip: [-0.1, 2.7, 3.6], tKnee: [0.6, 2.0, 3.4], gKnee: [-0.35, 1.7, 4.7], tFoot: [0.8, 1.2, 2.6], gFoot: [-0.4, 0, 5.0] };
+// Right-handed batter on the third-base side, facing the plate; t = back side, g = front side.
+const B_STANCE = { head: [2.75, 5.55, 60.5], tSho: [2.95, 4.9, 61.0], gSho: [2.65, 4.85, 60.1], tElb: [3.35, 4.3, 61.3], gElb: [2.6, 4.35, 60.8], tHand: [3.15, 4.95, 61.25], gHand: [3.1, 4.85, 61.2], hip: [2.95, 3.2, 60.6], tKnee: [3.15, 1.75, 61.2], gKnee: [2.55, 1.75, 59.9], tFoot: [3.05, 0, 61.6], gFoot: [2.75, 0, 59.6], tip: [3.45, 7.25, 62.0] };
+const B_LOAD = { ...B_STANCE, gKnee: [2.5, 2.1, 59.5], gFoot: [2.7, 0.5, 59.2], gHand: [3.3, 5.0, 61.5], tHand: [3.35, 5.1, 61.55], tip: [3.75, 7.1, 62.6] };
+const B_CONTACT = { head: [2.7, 5.45, 60.3], tSho: [2.75, 4.7, 61.0], gSho: [2.55, 4.75, 60.0], tElb: [2.6, 3.9, 60.6], gElb: [2.1, 4.0, 59.9], tHand: [2.05, 3.7, 60.0], gHand: [1.95, 3.65, 59.9], hip: [2.85, 3.05, 60.6], tKnee: [2.85, 1.5, 61.0], gKnee: [2.55, 1.65, 59.4], tFoot: [3.0, 0.25, 61.4], gFoot: [2.7, 0, 58.9], tip: [-0.2, 3.25, 59.4] };
+const B_FOLLOW = { ...B_CONTACT, head: [2.75, 5.5, 60.2], gElb: [2.3, 4.6, 59.7], tElb: [2.7, 4.9, 59.9], gHand: [2.6, 5.1, 59.8], tHand: [2.65, 5.15, 59.85], tip: [3.9, 5.2, 62.6] };
+const BONES = [["hip", "tKnee"], ["tKnee", "tFoot"], ["hip", "gKnee"], ["gKnee", "gFoot"], ["hip", "neck"], ["tSho", "gSho"], ["tSho", "tElb"], ["tElb", "tHand"], ["gSho", "gElb"], ["gElb", "gHand"]];
+
+// Draws a figure as glowing translucent capsules (additive, so overlap order doesn't matter).
+function drawFigure(P, alpha, opts = {}) {
+  if (alpha <= 0.01) return;
+  const J = { ...P, neck: V.mul(V.add(P.tSho, P.gSho), 0.5) };
+  const r = opts.r || 0.2;
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  for (const [a, b] of BONES) {
+    const s = projSeg(J[a], J[b]); if (!s) continue;
+    const w = r * (s[0].s + s[1].s);
+    const grad = ctx.createLinearGradient(s[0].x, s[0].y, s[1].x, s[1].y);
+    grad.addColorStop(0, `rgba(${HOLO},${0.55 * alpha})`); grad.addColorStop(1, `rgba(${HOLO},${0.35 * alpha})`);
+    ctx.strokeStyle = `rgba(${HOLO},${0.07 * alpha})`; ctx.lineWidth = w * 1.9;
+    ctx.beginPath(); ctx.moveTo(s[0].x, s[0].y); ctx.lineTo(s[1].x, s[1].y); ctx.stroke();
+    ctx.strokeStyle = grad; ctx.lineWidth = w;
+    ctx.beginPath(); ctx.moveTo(s[0].x, s[0].y); ctx.lineTo(s[1].x, s[1].y); ctx.stroke();
+    ctx.strokeStyle = `rgba(255,255,255,${0.35 * alpha})`; ctx.lineWidth = Math.max(0.6, w * 0.22);
+    ctx.beginPath(); ctx.moveTo(s[0].x, s[0].y); ctx.lineTo(s[1].x, s[1].y); ctx.stroke();
+  }
+  if (opts.bat) {
+    const s = projSeg(J.gHand, J.tip);
+    if (s) { ctx.strokeStyle = `rgba(255,255,255,${0.8 * alpha})`; ctx.lineWidth = Math.max(1, 0.12 * (s[0].s + s[1].s)); ctx.beginPath(); ctx.moveTo(s[0].x, s[0].y); ctx.lineTo(s[1].x, s[1].y); ctx.stroke(); }
+  }
+  const h = proj(J.head);
+  if (h) {
+    const hr = Math.max(2, 0.4 * h.s);
+    const g = ctx.createRadialGradient(h.x - hr * 0.35, h.y - hr * 0.35, hr * 0.1, h.x, h.y, hr);
+    g.addColorStop(0, `rgba(255,255,255,${0.8 * alpha})`); g.addColorStop(0.6, `rgba(${HOLO},${0.45 * alpha})`); g.addColorStop(1, `rgba(${HOLO},${0.08 * alpha})`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(h.x, h.y, hr, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ---------- 3D spinning baseball ----------
+// Seam: the classic two-lobe curve on the unit sphere.
+const SEAM = [];
+for (let i = 0; i < 96; i++) {
+  const t = i / 96 * Math.PI * 2, a = 0.7, b = 0.3;
+  SEAM.push(V.norm([a * Math.cos(t) + b * Math.cos(3 * t), a * Math.sin(t) - b * Math.sin(3 * t), 2 * Math.sqrt(a * b) * Math.sin(2 * t)]));
+}
+function rotate(v, axis, ang) {   // Rodrigues
+  const c = Math.cos(ang), s = Math.sin(ang), k = axis;
+  const kv = V.cross(k, v), kd = V.dot(k, v);
+  return [v[0] * c + kv[0] * s + k[0] * kd * (1 - c), v[1] * c + kv[1] * s + k[1] * kd * (1 - c), v[2] * c + kv[2] * s + k[2] * kd * (1 - c)];
+}
+// rgb = "r,g,b" tints the ball and its halo; alpha dims the whole ball.
+function drawBall(center, radiusFt, axis, ang, glow = 1, rgb = HOLO, alpha = 1, seams = true) {
+  const q = proj(center); if (!q) return null;
+  const r = Math.max(2.5, radiusFt * q.s);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.globalCompositeOperation = "lighter";
+  const halo = ctx.createRadialGradient(q.x, q.y, r * 0.8, q.x, q.y, r * 2.6);
+  halo.addColorStop(0, `rgba(${rgb},${0.35 * glow})`); halo.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(q.x, q.y, r * 2.6, 0, Math.PI * 2); ctx.fill();
+  ctx.globalCompositeOperation = "source-over";
+  const g = ctx.createRadialGradient(q.x - r * 0.35, q.y - r * 0.4, r * 0.1, q.x, q.y, r);
+  if (rgb === HOLO) { g.addColorStop(0, "#ffffff"); g.addColorStop(0.65, "#d0d6e0"); g.addColorStop(1, "#62666d"); }
+  else { g.addColorStop(0, "#ffffff"); g.addColorStop(0.5, `rgb(${rgb})`); g.addColorStop(1, `rgb(${shade(rgb, 0.55)})`); }
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill();
+  if (seams && r > 3.5) {
+    // Seams: rotate, keep the half facing the camera, draw as one stitched curve.
+    ctx.strokeStyle = rgb === HOLO ? "rgba(56,59,63,0.95)" : `rgba(${shade(rgb, 0.4)},0.95)`; ctx.lineWidth = Math.max(0.8, r * 0.09); ctx.lineCap = "round";
+    let prev = null;
+    for (let i = 0; i <= SEAM.length; i++) {
+      const v = rotate(SEAM[i % SEAM.length], axis, ang);
+      const facing = -V.dot(v, cam.f);
+      const pt = facing > 0.02 ? { x: q.x + V.dot(v, cam.r) * r * 0.97, y: q.y - V.dot(v, cam.u) * r * 0.97 } : null;
+      if (pt && prev) { ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(pt.x, pt.y); ctx.stroke(); }
+      prev = pt;
+    }
+  }
+  ctx.restore();
+  return { x: q.x, y: q.y, r };
+}
+function shade(rgb, f) { return rgb.split(",").map(v => Math.round(Number(v) * f)).join(","); }
+// A distinct colour per strikeout in the umpire view (golden-angle hues).
+function kColor(i) {
+  const h = ((45 + i * 137.508) % 360) / 360, s = 0.9, l = 0.6;
+  const f = n => { const k = (n + h * 12) % 12, a = s * Math.min(l, 1 - l); return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); };
+  return `${f(0)},${f(8)},${f(4)}`;
+}
+const MOUND_BALL = "228,242,34";   // acid lime: the one accent on the field, so the pitch stands out
+// A hologram ball like the figures: additive glow, translucent core, bright rim. True size; the glow keeps it visible.
+function drawHoloBall(center, radiusFt, rgb, alpha = 1) {
+  const q = proj(center); if (!q) return null;
+  const r = Math.max(2, radiusFt * q.s), g = Math.max(r * 4, 9);
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  const halo = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, g);
+  halo.addColorStop(0, `rgba(${rgb},${0.55 * alpha})`); halo.addColorStop(0.35, `rgba(${rgb},${0.18 * alpha})`); halo.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(q.x, q.y, g, 0, Math.PI * 2); ctx.fill();
+  const core = ctx.createRadialGradient(q.x - r * 0.3, q.y - r * 0.35, 0, q.x, q.y, r);
+  core.addColorStop(0, `rgba(255,252,225,${0.95 * alpha})`); core.addColorStop(0.55, `rgba(${rgb},${0.75 * alpha})`); core.addColorStop(1, `rgba(${rgb},${0.35 * alpha})`);
+  ctx.fillStyle = core; ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = `rgba(${rgb},${0.9 * alpha})`; ctx.lineWidth = Math.max(0.8, r * 0.18);
+  ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+  return { x: q.x, y: q.y, r };
+}
+function spinAxis(pt, hand) { const a = PITCH_KINDS[pt.kind].axis; return V.norm([a[0] * (hand === "L" ? -1 : 1), a[1], a[2]]); }
+
+// Ball path from release to the plate; late movement bows it, so breaking balls curve and drop.
+function ballPos(pt, t, hand) {
+  const sgn = hand === "L" ? -1 : 1;
+  const R = [1.6 * sgn, 5.8, 6.0], T = [-pt.loc.px, pt.loc.pz, PLATE_Z];
+  const mv = PITCH_KINDS[pt.kind].move, k = 1.9, bow = t * t - t;
+  return [lerp(R[0], T[0], t) + mv[0] * sgn * k * bow, lerp(R[1], T[1], t) + mv[1] * k * bow - 0.9 * bow, lerp(R[2], T[2], t)];
+}
+function drawTrail(pt, tEnd, hand, alpha, rgb = HOLO) {
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  const N = 30; let prev = null;
+  for (let i = 0; i <= N; i++) {
+    const t = Math.max(0, tEnd - 0.55) + (i / N) * Math.min(0.55, tEnd);
+    const q = proj(ballPos(pt, t, hand));
+    if (q && prev) { ctx.strokeStyle = `rgba(${rgb},${alpha * i / N})`; ctx.lineWidth = Math.max(1, 0.14 * q.s * (i / N)); ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
+    prev = q;
+  }
+  ctx.restore();
+}
+
+/* =====================================================================
+   4. PLAYBACK: only strike-three pitches are thrown. Times in ms at 1x.
+   ===================================================================== */
+const T = { lift: 120, stride: 330, preRel: 450, rel: 520, follow: 820 };
+const FLIGHT_SLOW = 1.5;      // flight shown 1.5x slower than real
+const UMP_FLIGHT_SCALE = 0.85, UMP_GAP = 220;   // umpire view: near real-speed flights, short gap between pitches
+const INTRO = 220, HOLD = 600, BATTER_FADE = 220, FLY_MS = 2000, BALL_SCALE_MOUND = 1.0, BALL_SCALE_UMP = 1.0;
+function flightMs(velo) { return (54.0 / (velo * 1.4667)) * 1000 * FLIGHT_SLOW; }
+
+const state = {
+  pitchers: [], p: null, game: null, seed: 0, history: [],
+  pi: 0, tPitch: 0, playing: true, speed: 1, applied: false, finished: false,
+  view: "pitch", side: "h", fly: null, umpT0: 0, showRuns: true, types: new Set(), lastTs: 0, pinned: null, hover: null,
+};
+const $ = id => document.getElementById(id);
+function currentK() { return state.game.ks[state.pi]; }
+function dur(pt) { const arrive = T.rel + flightMs(pt.velo); return { arrive, end: arrive + HOLD }; }
+
+function startGame(seed, opts = {}) {
+  state.seed = seed >>> 0;
+  state.game = simulateGame(state.p, state.seed);
+  state.pi = 0; state.tPitch = -INTRO; state.applied = false; state.finished = false;
+  recordRun();
+  $("seedInput").value = String(state.seed);
+  state.types = new Set(state.game.ks.map(k => k.kind));
+  buildChips();
+  if (state.view !== "pitch") flyTo("pitch", opts.instant);
+  setHud(); $("caption").textContent = "";
+  if (!state.game.ks.length) { state.finished = true; finishOuting(); }
+  updateSide();
+}
+
+function setHud() {
+  const g = state.game, pt = currentK();
+  if (state.finished || !pt) {
+    $("hBatter").textContent = String(g.bf); $("hCount").textContent = "—"; $("hPitches").textContent = String(g.pitches.length);
+    $("hK").textContent = String(g.k);
+  } else {
+    $("hBatter").textContent = String(pt.bf);
+    $("hCount").textContent = `${pt.balls}-${state.applied ? 3 : pt.strikes}`;
+    $("hPitches").textContent = String(state.applied ? pt.n : pt.n - 1);
+    $("hK").textContent = String(state.pi + (state.applied ? 1 : 0));
+  }
+  $("hModel").textContent = state.p.pred_k.toFixed(1) + (state.p.actual_k != null ? ` (real ${state.p.actual_k})` : "");
+}
+
+function advance(ms) {
+  const pt = currentK(); if (!pt) return;
+  const d = dur(pt), before = state.tPitch;
+  state.tPitch += ms;
+  if (before < T.rel && state.tPitch >= T.rel) $("caption").textContent = "";
+  if (!state.applied && state.tPitch >= d.arrive) {
+    state.applied = true; setHud();
+    $("caption").textContent = `${pt.kind} ${pt.velo.toFixed(1)} · ${pt.looking ? "looking" : pt.chase ? "chased" : "swinging"}`;
+    updateSide();
+  }
+  if (state.tPitch >= d.end) {
+    state.pi++; state.tPitch = -INTRO; state.applied = false;
+    if (state.pi >= state.game.ks.length) { state.finished = true; finishOuting(); }
+    else setHud();
+  }
+}
+function finishOuting() {
+  setHud(); updateSide();
+  setTimeout(() => { if (state.finished && state.view === "pitch" && !state.fly) flyTo("ump"); }, 350 / state.speed);
+}
+
+// Camera flight between the mound camera and the umpire view: up, over and down.
+// When it lands, the orbit controls pick up from the preset.
+function flyTo(view, instant) {
+  const from = { pos: cam.pos.slice(), target: cam.target.slice(), height: cam.height };
+  const to = view === "ump" ? CAM_UMP : CAM_MOUND;
+  state.view = view;
+  document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+  $("chips").hidden = view !== "ump";
+  $("umpsum").hidden = true; hideTip(); clearUmpOverlay();
+  $("plist").hidden = view !== "ump";
+  if (view === "ump") $("caption").textContent = "";
+  if (instant || reducedMotion()) { state.fly = null; orbit = orbitFrom(to); setCamera(to); if (view === "ump") arriveUmp(); return; }
+  state.fly = { from, to, t0: performance.now(), view, ms: FLY_MS, arc: true };
+}
+// Reset view: a short straight glide back to the current view's preset.
+function resetView() {
+  const to = state.view === "ump" ? CAM_UMP : CAM_MOUND;
+  if (reducedMotion()) { state.fly = null; orbit = orbitFrom(to); return; }
+  state.fly = { from: { pos: cam.pos.slice(), target: cam.target.slice(), height: cam.height }, to, t0: performance.now(), view: null, ms: 700, arc: false };
+}
+function stepFly(now) {
+  const f = state.fly; if (!f) return;
+  const u = clamp((now - f.t0) / f.ms, 0, 1), e = easeInOut(u);
+  if (f.arc) {
+    // Cubic Bezier through two high control points so the camera arcs over the field.
+    const goingUmp = f.view === "ump";
+    const c1 = goingUmp ? [-60, 95, -70] : [0, 55, 120];
+    const c2 = goingUmp ? [0, 55, 120] : [-60, 95, -70];
+    const P = [f.from.pos, c1, c2, f.to.pos], m = 1 - e;
+    const pos = [0, 1, 2].map(i => m * m * m * P[0][i] + 3 * m * m * e * P[1][i] + 3 * m * e * e * P[2][i] + e * e * e * P[3][i]);
+    const height = Math.exp(lerp(Math.log(f.from.height), Math.log(f.to.height), e)) * (1 + 1.4 * Math.sin(Math.PI * e));
+    setCamera({ pos, target: V.lerp(f.from.target, f.to.target, e), height });
+  } else {
+    setCamera({ pos: V.lerp(f.from.pos, f.to.pos, e), target: V.lerp(f.from.target, f.to.target, e), height: Math.exp(lerp(Math.log(f.from.height), Math.log(f.to.height), e)) });
+  }
+  if (u >= 1) { state.fly = null; orbit = orbitFrom(f.to); setCamera(f.to); if (f.view === "ump") arriveUmp(); }
+}
+// The user grabs the camera: stop any flight where it is and orbit from there.
+function takeControl() {
+  if (!state.fly) return;
+  const f = state.fly; state.fly = null;
+  orbit = clampOrbit(orbitFrom(cam));
+  if (f.view === "ump" && state.view === "ump") arriveUmp();
+}
+function arriveUmp() {
+  state.umpT0 = performance.now();
+  const ks = state.game.ks;
+  const ch = ks.filter(k => k.chase).length, lk = ks.filter(k => k.looking).length;
+  $("umpsum").hidden = false;
+  $("umpsum").textContent = ks.length
+    ? `${ks.length} strikeouts · ${ch} chased out of the zone · ${lk} looking · ${ks.length - ch - lk} swinging in the zone${ks[0].source === "data" ? " · locations from his real strikeouts" : ""}`
+    : "No strikeouts in this run.";
+}
+
+// ---------- Frame ----------
+function frame(ts) {
+  const dt = state.lastTs ? Math.min(100, ts - state.lastTs) : 16;
+  state.lastTs = ts;
+  if (state.game && !menuOv.covering && !state.finished && state.view === "pitch" && !(state.fly && state.fly.arc)) advance(dt * state.speed);
+  if (state.fly) stepFly(ts); else setCamera(camFromOrbit(orbit));
+  if (!$("simView").hidden && !document.hidden && !menuOv.covering) {
+    const t0 = performance.now();
+    render(ts);
+    // A slow frame (over 20 ms, three in a row) halves the constellation.
+    if (performance.now() - t0 > 20) { if (++stars.slow >= 3 && stars.n > 300) { stars.n = Math.floor(stars.n / 2); stars.slow = 0; } } else stars.slow = 0;
+  }
+  requestAnimationFrame(frame);
+}
+
+function render(ts) {
+  if (!W || !H || !state.game) return;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const umpCam = state.view === "ump" && !(state.fly && state.fly.arc);
+  drawField(umpCam, ts);
+  const p = state.p, g = state.game;
+  const pt = currentK() || g.ks[g.ks.length - 1];
+  const sgn = p.hand === "L" ? -1 : 1;
+  const behindPlate = clamp((62 - cam.pos[2]) / 8, 0, 1);   // fade the batter as the camera passes the plate
+  const t = pt ? (state.finished ? dur(pt).end : state.tPitch) : 0;
+
+  if (pt) {
+    const d = dur(pt);
+    // Batter: steps in, loads, then swings through strike three or takes it.
+    const bSgn = pt.batterHand === "L" ? -1 : 1, sw = 300;
+    let bp;
+    if (t < d.arrive - 600) bp = B_STANCE;
+    else if (t < d.arrive - sw) bp = lerpPose(B_STANCE, B_LOAD, (t - (d.arrive - 600)) / (600 - sw));
+    else if (!pt.looking && t < d.arrive) bp = lerpPose(B_LOAD, B_CONTACT, (t - (d.arrive - sw)) / sw);
+    else if (!pt.looking) bp = lerpPose(B_CONTACT, B_FOLLOW, (t - d.arrive) / 250);
+    else bp = lerpPose(B_LOAD, B_STANCE, (t - d.arrive) / 300);
+    // Each strikeout is a new batter: fade the last one out at the end of the hold, the next one in.
+    const fadeIn = ease(clamp((t + INTRO) / INTRO, 0, 1)), fadeOut = 1 - ease(clamp((t - (d.end - BATTER_FADE)) / BATTER_FADE, 0, 1));
+    drawFigure(mirrorPose(bp, bSgn), 0.8 * behindPlate * fadeIn * fadeOut, { r: 0.17, bat: true });
+  }
+  // Pitcher delivery.
+  let pp;
+  if (state.finished || t < T.lift) pp = P_SET;
+  else if (t < T.stride) pp = lerpPose(P_SET, P_LIFT, (t - T.lift) / (T.stride - T.lift));
+  else if (t < T.preRel) pp = lerpPose(P_LIFT, P_STRIDE, (t - T.stride) / (T.preRel - T.stride));
+  else if (t < T.rel) pp = lerpPose(P_STRIDE, P_REL, (t - T.preRel) / (T.rel - T.preRel));
+  else if (t < T.follow) pp = lerpPose(P_REL, P_FOLLOW, (t - T.rel) / (T.follow - T.rel));
+  else pp = P_FOLLOW;
+  drawFigure(mirrorPose(pp, sgn), umpCam ? 0.3 : 0.95, { r: 0.18 });
+
+  // The strike-three pitch in flight, spinning.
+  if (pt && !state.finished && state.view === "pitch" && !(state.fly && state.fly.arc) && t >= T.rel) {
+    const ft = clamp((t - T.rel) / flightMs(pt.velo), 0, 1);
+    const axis = spinAxis(pt, p.hand), ang = ft * PITCH_KINDS[pt.kind].turns * Math.PI * 2;
+    drawTrail(pt, ft, p.hand, 0.9, MOUND_BALL);
+    const fade = ft < 1 ? 1 : clamp(1 - (t - dur(pt).arrive) / HOLD, 0, 1);
+    if (fade > 0) drawHoloBall(ballPos(pt, ft, p.hand), SIM.BALL_R * BALL_SCALE_MOUND, MOUND_BALL, fade);   // true size
+  }
+  // Umpire view: every strike-three pitch of this run, spinning slowly where it crossed.
+  if (umpCam) drawUmpPitches(ts);
+}
+
+function drawUmpPitches(ts) {
+  const g = state.game, p = state.p, since = ts - state.umpT0;
+  if (state.showRuns) {
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    state.history.filter(r => r.seed !== state.seed).forEach(r => r.ks.forEach(k => {
+      if (!state.types.has(k.kind)) return;
+      const q = proj([-k.loc.px, k.loc.pz, PLATE_Z]); if (!q) return;
+      ctx.fillStyle = `rgba(${HOLO},0.22)`; ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(2, SIM.BALL_R * 0.55 * q.s), 0, Math.PI * 2); ctx.fill();
+    }));
+    ctx.restore();
+  }
+  const shown = g.ks.map((k, i) => ({ k, i })).filter(({ k }) => state.types.has(k.kind));
+  // Pitches come in one at a time, fast: each flies from the release point, then the next follows.
+  const arrived = [];
+  let tStart = 0;
+  shown.forEach(({ k, i }) => {
+    const fly = flightMs(k.velo) / FLIGHT_SLOW * UMP_FLIGHT_SCALE, t0 = tStart;
+    tStart += fly + UMP_GAP;
+    if (since < t0) return;
+    const col = kColor(i), axis = spinAxis(k, p.hand), ang = (ts / 1000) * 0.6 * Math.PI * 2 + i;
+    const ft = clamp((since - t0) / fly, 0, 1);
+    if (ft < 1) {
+      drawTrail(k, ft, p.hand, 0.85, col);
+      drawBall(ballPos(k, ft, p.hand), SIM.BALL_R * BALL_SCALE_UMP, axis, ang * 4, 1, col);
+      return;
+    }
+    const hl = state.hover, on = hl === i, dim = hl != null && !on;
+    const b = drawBall([-k.loc.px, k.loc.pz, PLATE_Z], SIM.BALL_R * BALL_SCALE_UMP * (on ? 1.35 : 1), axis, ang, on ? 1.6 : 1, col, dim ? 0.25 : 1);
+    if (!b) { arrived.push({ k, i, b: null }); return; }
+    ctx.save(); ctx.globalAlpha = dim ? 0.25 : 1;
+    if (k.chase) { ctx.strokeStyle = `rgba(${col},0.9)`; ctx.setLineDash([3, 3]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(b.x, b.y, b.r + 4, 0, Math.PI * 2); ctx.stroke(); }
+    if (on) { ctx.setLineDash([]); ctx.strokeStyle = "rgba(255,255,255,0.95)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(b.x, b.y, b.r + 8, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.restore();
+    arrived.push({ k, i, b });
+  });
+  // List on the left (one row per pitch, added as it lands) and hover targets over the balls.
+  // Rows and targets are rebuilt when the set of landed pitches changes; the targets move with the camera every frame.
+  const key = arrived.map(w => w.i).join(",");
+  const boxes = $("labels"), list = $("plist");
+  if (boxes.dataset.key !== key) {
+    boxes.dataset.key = key; boxes.innerHTML = ""; umpHits.clear();
+    [...list.children].forEach(n => { if (!arrived.some(w => w.i === Number(n.dataset.i))) n.remove(); });
+    arrived.forEach(({ k, i }) => {
+      let row = list.querySelector(`[data-i="${i}"]`);
+      if (!row) {
+        row = document.createElement("button");
+        row.type = "button"; row.className = "prow"; row.dataset.i = String(i); row.style.setProperty("--c", kColor(i));
+        row.innerHTML = `<span class="dot"></span><span>${i + 1}. ${k.kind} ${k.velo.toFixed(1)}</span><span class="how">${k.looking ? "looking" : k.chase ? "chased" : "swing"}</span>`;
+        row.setAttribute("aria-label", `Strikeout ${i + 1}: ${k.type} ${k.velo.toFixed(1)} mph, ${k.looking ? "looking" : k.chase ? "chased" : "swinging"}`);
+        row.addEventListener("pointerenter", () => showTip(k, i, null, row));
+        row.addEventListener("pointerleave", () => { if (state.pinned !== i) hideTip(); });
+        row.addEventListener("focus", () => showTip(k, i, null, row)); row.addEventListener("blur", hideTip);
+        row.addEventListener("click", e => { showTip(k, i, null, row); state.pinned = i; e.stopPropagation(); });
+        const after = [...list.children].find(n => Number(n.dataset.i) > i);
+        list.insertBefore(row, after || null);
+      }
+      const hit = document.createElement("button");
+      hit.className = "phit"; hit.type = "button"; hit.tabIndex = -1; hit.setAttribute("aria-hidden", "true");
+      hit.addEventListener("pointerenter", e => showTip(k, i, e, list.querySelector(`[data-i="${i}"]`)));
+      hit.addEventListener("pointerleave", () => { if (state.pinned !== i) hideTip(); });
+      hit.addEventListener("click", e => { showTip(k, i, e, list.querySelector(`[data-i="${i}"]`)); state.pinned = i; e.stopPropagation(); });
+      boxes.appendChild(hit); umpHits.set(i, hit);
+    });
+  }
+  arrived.forEach(({ i, b }) => {
+    const hit = umpHits.get(i); if (!hit) return;
+    hit.hidden = !b; if (!b) return;
+    const size = (b.r * 2 + 10).toFixed(1) + "px";
+    hit.style.left = b.x.toFixed(1) + "px"; hit.style.top = b.y.toFixed(1) + "px";
+    if (hit.style.width !== size) hit.style.width = hit.style.height = size;
+  });
+}
+const umpHits = new Map();
+function clearUmpOverlay() { $("labels").innerHTML = ""; $("labels").dataset.key = ""; umpHits.clear(); $("plist").innerHTML = ""; }
+function showTip(k, i, e, anchor) {
+  const tip = $("tip");
+  const where = k.chase ? "chased, out of the zone" : (inZone(k.loc.px, k.loc.pz) ? "in the zone" : "called just off the edge");
+  tip.innerHTML = `<b>${k.kind} ${k.velo.toFixed(1)} mph</b><br>${escapeHtml(k.type)}<br>Strikeout ${i + 1} · batter ${k.bf} (${k.batterHand}HB)<br>${k.balls}-2 count · pitch ${k.n} · inning ${k.inning}<br>${k.looking ? "Called strike three" : "Swinging strike three"}, ${where}`;
+  tip.hidden = false;
+  const sr = $("stage").getBoundingClientRect();
+  let x, y;
+  if (e && e.clientX) { x = e.clientX - sr.left; y = e.clientY - sr.top; }
+  else { const ar = anchor.getBoundingClientRect(); x = ar.right - sr.left; y = ar.top - sr.top + tip.offsetHeight + 10; }
+  tip.style.left = clamp(x + 12, 6, sr.width - tip.offsetWidth - 6) + "px";
+  tip.style.top = clamp(y - tip.offsetHeight - 10, 6, sr.height - tip.offsetHeight - 6) + "px";
+  state.hover = i;
+  document.querySelectorAll(".prow.on").forEach(n => n.classList.remove("on"));
+  if (anchor) { anchor.classList.add("on"); anchor.scrollIntoView({ block: "nearest" }); }
+}
+function hideTip() { $("tip").hidden = true; state.pinned = null; state.hover = null; document.querySelectorAll(".prow.on").forEach(n => n.classList.remove("on")); }
+
+function buildChips() {
+  const box = $("chips"); box.innerHTML = "";
+  const kinds = state.p.mix.map(m => m.code).filter((k, i, a) => a.indexOf(k) === i && state.game.ks.some(x => x.kind === k));
+  kinds.forEach(k => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip cubebtn"; b.setAttribute("aria-pressed", "true"); b.title = PITCH_KINDS[k].name;
+    b.style.setProperty("--c", FX_COLORS[kinds.indexOf(k) % FX_COLORS.length]); b.dataset.cube = FX_COLORS[kinds.indexOf(k) % FX_COLORS.length];
+    b.innerHTML = `<span class="lbl">${k}</span>`;
+    b.addEventListener("click", () => { if (state.types.has(k)) state.types.delete(k); else state.types.add(k); b.setAttribute("aria-pressed", String(state.types.has(k))); $("labels").dataset.key = ""; });
+    box.appendChild(b);
+  });
+  const rb = document.createElement("button");
+  rb.type = "button"; rb.className = "chip cubebtn"; rb.setAttribute("aria-pressed", String(state.showRuns)); rb.innerHTML = `<span class="lbl">earlier runs</span>`; rb.dataset.cube = "236,239,244";
+  rb.title = "Faint dots: strikeout pitches from your other runs";
+  rb.addEventListener("click", () => { state.showRuns = !state.showRuns; rb.setAttribute("aria-pressed", String(state.showRuns)); });
+  box.appendChild(rb);
+  cubeIcons.scan();
+}
+
+/* =====================================================================
+   5. PAGE UI: side rail, run history, batch runs, loading data
+   ===================================================================== */
+function updateSide() {
+  const p = state.p, g = state.game;
+  const shownK = state.finished ? g.k : state.pi + (state.applied ? 1 : 0);
+  $("kNow").textContent = String(shownK);
+  $("kOf").textContent = `strikeouts · model ${p.pred_k.toFixed(1)}${p.actual_k != null ? ` · actual ${p.actual_k}` : ""}`;
+  if (state.finished) {
+    const ch = g.ks.filter(k => k.chase).length, lk = g.ks.filter(k => k.looking).length;
+    $("kDetail").textContent = `${g.bf} batters, ${g.pitches.length} pitches. Of ${g.k} strikeouts, ${ch} chased out of the zone and ${lk} were looking.`;
+  } else $("kDetail").textContent = `${g.bf} batters in this run. Every pitch shown is a strike three.`;
+  if (state.matchups) {
+    const pr = p.probs || {}, pct = k => pr[k] != null ? `${k} ${Math.round(100 * pr[k])}%` : null;
+    const odds = ["5+", "6+", "7+"].map(pct).filter(Boolean).join(" · ");
+    const where = hasSides() ? ` · ${p.side === "a" ? "away" : "home"} at ${escapeHtml(parkName(p, p.opponent, p.side))}` : "";
+    $("kGame").innerHTML = [`${escapeHtml(p.name)} (${p.hand}HP), ${escapeHtml(teamName(p.team))}`,
+      `${p.side === "a" ? "@" : "vs"} ${escapeHtml(teamName(p.opponent))}${where}`, `Model <b>${p.pred_k.toFixed(1)} K</b>${odds ? " · " + odds : ""}`].join("<br>");
+    $("fK").textContent = p.pred_k.toFixed(1); $("fBF").textContent = p.pred_bf.toFixed(1); $("fKR").textContent = (p.k_rate * 100).toFixed(1) + "%";
+    renderFactors();
+    return;
+  }
+  const date = p.game_date ? new Date(p.game_date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+  $("kGame").innerHTML = [`${escapeHtml(p.name)} (${p.hand}HP)${p.team ? ", " + escapeHtml(teamName(p.team)) : ""}`,
+    `vs ${escapeHtml(teamName(p.opponent))}${date ? " · " + date : ""}`,
+    `Model <b>${p.pred_k.toFixed(1)} K</b>${p.actual_k != null ? ` · Actual <b>${p.actual_k} K</b>` : ""}`].join("<br>");
+  $("fK").textContent = p.pred_k.toFixed(1); $("fBF").textContent = p.pred_bf.toFixed(1); $("fKR").textContent = (p.k_rate * 100).toFixed(1) + "%";
+  renderFactors();
+}
+
+// "What moved the prediction": the baseline (every input at its training mean), then each factor group's
+// contribution, largest first, then the total. The export makes them add up to the model's K exactly.
+function renderFactors() {
+  const p = state.p, fx = state.factors;
+  if (!state.matchups || !fx || !p.contrib) { $("entFactors").hidden = true; return; }
+  $("entFactors").hidden = false;
+  const key = [p.id, p.opponent, p.side].join("|");
+  if ($("factors").dataset.key === key) return;
+  $("factors").dataset.key = key;
+  const rows = fx.groups.map(([key, label], i) => ({ key, label, v: p.contrib[i] })).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
+  const max = Math.max(0.05, ...rows.map(r => Math.abs(r.v)));
+  const signed = v => (v >= 0.005 ? "+" : v <= -0.005 ? "−" : "±") + Math.abs(v).toFixed(2);
+  const row = (cls, label, value, detail, bar) => `<div class="frow ${cls}"><span class="fl">${escapeHtml(label)}</span><span class="fv">${value}</span><span class="fd">${escapeHtml(detail)}</span>${bar || ""}</div>`;
+  const bar = v => { const w = Math.abs(v) / max * 50; return `<div class="fbar" aria-hidden="true"><span style="left:${v >= 0 ? 50 : 50 - w}%;width:${w}%"></span></div>`; };
+  const sum = rows.reduce((a, r) => a + r.v, 0);
+  $("factors").innerHTML = row("base", "Baseline", fx.baseline.toFixed(2), "An average start: every input at its training mean")
+    + rows.map(r => row(r.v >= 0.005 ? "plus" : r.v <= -0.005 ? "minus" : "", r.label, signed(r.v), factorDetail(r.key, p), bar(r.v))).join("")
+    + row("total", "Model K", p.pred_k.toFixed(2), `Baseline ${fx.baseline.toFixed(2)} ${sum < 0 ? "−" : "+"} ${Math.abs(sum).toFixed(2)} from the factors`);
+  $("factorNote").textContent = "Each factor is the model's prediction minus the prediction with those inputs set to their training average. Interactions is the rest: what the inputs only do together.";
+}
+function factorDetail(key, p) {
+  const L = state.factors.league, pv = p.values || {}, mv = p.mvalues || {}, ok = x => x != null && Number.isFinite(x);
+  const pct = x => ok(x) ? (100 * x).toFixed(1) + "%" : "–", num = (x, d = 1) => ok(x) ? x.toFixed(d) : "–";
+  const hand = p.hand === "L" ? "LHP" : "RHP", park = parkName(p, p.opponent, p.side);
+  switch (key) {
+    case "home": return `${p.side === "a" ? "Away" : "Home"} at ${park}`;
+    case "park": return ok(mv.park_k_factor) ? `${park} K factor ${num(mv.park_k_factor, 2)} (league 1.00)${mv.roof_closed ? ", roof closed" : ""}` : `${park}: no park factor yet, treated as unknown`;
+    case "weather":
+      if (mv.roof_closed) return `Roof closed, so no wind; ${mv.day_game ? "day" : "night"} game assumed`;
+      return ok(mv.wind_out_mph) && mv.wind_out_mph !== 0 ? `Wind ${num(Math.abs(mv.wind_out_mph), 0)} mph ${mv.wind_out_mph > 0 ? "out" : "in"}; ${mv.day_game ? "day" : "night"} game`
+        : `Wind not known yet, entered as calm; ${mv.day_game ? "day" : "night"} game assumed`;
+    case "ump": return ok(mv.ump_k_factor) ? `Umpire K factor ${num(mv.ump_k_factor, 2)} (league 1.00)` : "Umpire not announced yet, so the model treats it as unknown";
+    case "opp_k": return `Lineup K rate ${pct(mv.lineup_k_rate_vs_hand)} vs ${hand} (league ${pct(L.lineup_k_rate_vs_hand)}); ${pct(mv.opp_k_rate_last30)} over the last 30 days`;
+    case "whiffs": return `Lineup whiffs on ${pct(mv.matchup_whiff_rate)} of swings at his pitch mix (league ${pct(L.matchup_whiff_rate)})`;
+    case "platoon": return `${ok(mv.lineup_platoon_adv_share) ? Math.round(100 * mv.lineup_platoon_adv_share) : "–"}% of the lineup has the platoon edge on a ${hand} (league ${Math.round(100 * L.lineup_platoon_adv_share)}%)`;
+    case "skill": return `Season K rate ${pct(pv.season_k_rate)} (league ${pct(L.season_k_rate)}), ${num(pv.season_k_per_start)} K per start; recent ${pct(pv.k_rate_ewm)}`;
+    case "stuff": return `Fastball ${num(pv.fb_velo_last5)} mph, whiffs on ${pct(pv.whiff_rate_last5)} of swings over his last 5 (league ${num(L.fb_velo_last5)} mph, ${pct(L.whiff_rate_last5)})`;
+    case "workload": return `${num(pv.bf_last5)} batters, ${ok(pv.pitches_last5) ? Math.round(pv.pitches_last5) : "–"} pitches per start over his last 5 (league ${num(L.bf_last5)}, ${Math.round(L.pitches_last5)})`;
+    case "rest": return pv.first_start_of_season ? "First start of the season"
+      : `${ok(pv.rest_days) ? Math.round(pv.rest_days) : "–"} days since his last start${pv.rest_days >= 30 ? " (capped at 30)" : ""} · ${ok(pv.n_prior_starts) ? Math.round(pv.n_prior_starts) : "–"} earlier starts`;
+    case "interactions": return "What the inputs only do in combination, beyond each factor on its own";
+    default: return "";
+  }
+}
+function recordRun() {
+  const g = state.game;
+  if (!state.history.some(r => r.seed === g.seed)) {
+    state.history.push({ n: state.history.length ? state.history[state.history.length - 1].n + 1 : 1, seed: g.seed, k: g.k, bf: g.bf, pitches: g.pitches.length, ks: g.ks });
+    if (state.history.length > 40) state.history.shift();
+  }
+  renderRuns();
+}
+function renderRuns() {
+  const h = state.history, p = state.p, ks = h.map(r => r.k);
+  const mean = ks.reduce((a, x) => a + x, 0) / Math.max(1, ks.length);
+  const allK = h.flatMap(r => r.ks), chase = allK.filter(k => k.chase).length, swing = allK.filter(k => !k.looking).length;
+  $("runSummary").textContent = h.length > 1
+    ? `${h.length} runs: ${mean.toFixed(1)} K on average (model ${p.pred_k.toFixed(1)}), from ${Math.min(...ks)} to ${Math.max(...ks)}. ${swing ? Math.round(100 * chase / swing) : 0}% of swinging strikeouts were chases.`
+    : "Redo simulation replays this start with a new seed, so you can see how much it moves.";
+  $("runs").innerHTML = h.slice().reverse().map(r => {
+    const mix = {}; r.ks.forEach(k => { mix[k.kind] = (mix[k.kind] || 0) + 1; });
+    const m = Object.entries(mix).sort((a, b) => b[1] - a[1]).map(([k, c]) => `${k}×${c}`).join(" ");
+    return `<li data-seed="${r.seed}" class="${r.seed === state.seed ? "cur" : ""}" tabindex="0" title="Replay seed ${r.seed}"><span class="bn">Run ${r.n}</span><span class="k">${r.k} K</span><span class="d">${r.ks.filter(k => k.chase).length} chased · ${m}</span></li>`;
+  }).join("");
+}
+
+let lastBatch = null;
+function runBatchUI() {
+  const n = clamp(Math.round(Number($("nGames").value) || 1000), 10, 100000);
+  $("nGames").value = n;
+  const batchSeed = (Math.random() * 4294967295) >>> 0, t0 = performance.now();
+  const games = runBatch(state.p, n, batchSeed);
+  lastBatch = { games, batchSeed, p: state.p };
+  renderBatch(lastBatch, performance.now() - t0);
+  $("watchRandom").disabled = false; $("watchMedian").disabled = false;
+}
+function renderBatch(b, ms) {
+  const p = b.p, ks = b.games.map(g => g.k).sort((x, y) => x - y), n = ks.length;
+  const mean = ks.reduce((a, x) => a + x, 0) / n;
+  const median = n % 2 ? ks[(n - 1) / 2] : (ks[n / 2 - 1] + ks[n / 2]) / 2;
+  const avgP = b.games.reduce((a, g) => a + g.pitches, 0) / n, avgBF = b.games.reduce((a, g) => a + g.bf, 0) / n;
+  const sw = b.games.reduce((a, g) => a + g.swinging, 0), ch = b.games.reduce((a, g) => a + g.chases, 0);
+  const maxK = Math.max(12, ks[n - 1]), counts = new Array(maxK + 1).fill(0); ks.forEach(k => counts[k]++);
+  const Wd = 640, Hd = 250, m = { l: 40, r: 12, t: 18, b: 34 }, iw = Wd - m.l - m.r, ih = Hd - m.t - m.b, bw = iw / (maxK + 1);
+  const ymax = Math.max(...counts) / n, step = ymax > 0.2 ? 0.05 : ymax > 0.1 ? 0.025 : 0.01, yTop = Math.ceil(ymax / step) * step;
+  const y = v => m.t + ih - (v / yTop) * ih, xm = v => m.l + (v + 0.5) * bw;
+  let s = `<svg viewBox="0 0 ${Wd} ${Hd}" role="img" aria-label="Histogram of strikeouts per simulated game">`;
+  for (let v = 0; v <= yTop + 1e-9; v += step) s += `<line x1="${m.l}" x2="${Wd - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="#23252a"/><text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#8a8f98">${Math.round(v * 100)}%</text>`;
+  counts.forEach((c, k) => {
+    s += `<rect x="${m.l + k * bw + 3}" y="${y(c / n)}" width="${bw - 6}" height="${Math.max(0, m.t + ih - y(c / n))}" rx="2" fill="rgba(208,214,224,${k >= Math.ceil(p.pred_k) ? 0.85 : 0.3})"><title>${k} K: ${(100 * c / n).toFixed(1)}% of games</title></rect>`;
+    s += `<text x="${xm(k)}" y="${Hd - m.b + 16}" text-anchor="middle" font-size="12" fill="#8a8f98">${k}</text>`;
+  });
+  s += `<line x1="${xm(p.pred_k)}" x2="${xm(p.pred_k)}" y1="${m.t - 6}" y2="${m.t + ih}" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="5 4"/><text x="${xm(p.pred_k) + 6}" y="${m.t + 6}" font-size="12" fill="#ffffff">model ${p.pred_k.toFixed(1)}</text>`;
+  s += `<text x="${m.l + iw / 2}" y="${Hd - 4}" text-anchor="middle" font-size="12" fill="#8a8f98">Strikeouts in the start</text></svg>`;
+  const rows = [3.5, 4.5, 5.5, 6.5, 7.5].map(L => {
+    const over = ks.filter(k => k > L).length / n, key = `${Math.ceil(L)}+`;
+    const model = p.probs && p.probs[key] != null ? Number(p.probs[key]) : null;
+    return `<tr><td>${L}</td><td>${(over * 100).toFixed(1)}%</td><td>${((1 - over) * 100).toFixed(1)}%</td><td>${model != null ? (model * 100).toFixed(1) + "%" : "–"}</td></tr>`;
+  }).join("");
+  $("batchOut").innerHTML = `<div class="results"><div class="hist">${s}</div><div class="col">
+    <div class="tiles">
+      <div><div class="lab">Mean K</div><div class="val">${mean.toFixed(2)}</div><div class="sub">model ${p.pred_k.toFixed(2)}</div></div>
+      <div><div class="lab">Median K</div><div class="val">${median}</div><div class="sub">per start</div></div>
+      <div><div class="lab">Pitches</div><div class="val">${avgP.toFixed(1)}</div><div class="sub">average</div></div>
+      <div><div class="lab">Batters</div><div class="val">${avgBF.toFixed(1)}</div><div class="sub">model ${p.pred_bf.toFixed(1)}</div></div>
+    </div>
+    <div class="tablewrap"><table class="lines"><thead><tr><th>Line</th><th>Over</th><th>Under</th><th>Model over</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="small">${n.toLocaleString()} games in ${Math.max(1, Math.round(ms))} ms · ${sw ? Math.round(100 * ch / sw) : 0}% of swinging strikeouts were chases · batch seed ${b.batchSeed}.</p>
+  </div></div>`;
+}
+function watchFromBatch(which) {
+  if (!lastBatch) return;
+  if (lastBatch.p !== state.p) { const i = state.pitchers.indexOf(lastBatch.p); if (i >= 0) selectPitcher(i); }
+  const g = lastBatch.games;
+  let pick;
+  if (which === "median") { const ks = g.map(x => x.k).sort((a, b) => a - b), med = ks[Math.floor((ks.length - 1) / 2)]; pick = g.find(x => x.k === med); }
+  else pick = g[Math.floor(Math.random() * g.length)];
+  startGame(pick.seed);
+  menuOv.close();
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+const TEAM_NAMES = {
+  ARI: "Arizona Diamondbacks", ATH: "Athletics", ATL: "Atlanta Braves", BAL: "Baltimore Orioles", BOS: "Boston Red Sox",
+  CHC: "Chicago Cubs", CIN: "Cincinnati Reds", CLE: "Cleveland Guardians", COL: "Colorado Rockies", CWS: "Chicago White Sox",
+  DET: "Detroit Tigers", HOU: "Houston Astros", KC: "Kansas City Royals", LAA: "Los Angeles Angels", LAD: "Los Angeles Dodgers",
+  MIA: "Miami Marlins", MIL: "Milwaukee Brewers", MIN: "Minnesota Twins", NYM: "New York Mets", NYY: "New York Yankees",
+  PHI: "Philadelphia Phillies", PIT: "Pittsburgh Pirates", SD: "San Diego Padres", SEA: "Seattle Mariners", SF: "San Francisco Giants",
+  STL: "St. Louis Cardinals", TB: "Tampa Bay Rays", TEX: "Texas Rangers", TOR: "Toronto Blue Jays", WSH: "Washington Nationals",
+};
+const teamName = t => TEAM_NAMES[t] || t;
+// Matchup mode (sim/matchups_2026.json): pick a pitcher, the team he faces and home or away;
+// the model numbers and the factor breakdown come from that pair and side.
+function parseMatchups(json) {
+  if (!json || !Array.isArray(json.pitchers) || !json.matchups) return null;
+  if (json.teams) Object.assign(TEAM_NAMES, json.teams);
+  const fx = json.factors || null;
+  const list = json.pitchers.map((raw, i) => {
+    const p = normalizePitcher({ ...raw, pred_k: 1 }, i);   // pred_k is set from the chosen matchup
+    p.values = fx && Array.isArray(raw.values) ? Object.fromEntries(fx.pitcher_values.map((k, j) => [k, raw.values[j]])) : {};
+    return p;
+  });
+  return { list, matchups: json.matchups, parks: json.parks || {}, factors: fx };
+}
+// One side of a matchup ("h" home, "a" away): {pred_k, probs, contrib, values}. Older exports have one side only.
+function matchupFor(p, opp, side) {
+  const e = ((state.matchups || {})[p.id] || {})[opp]; if (!e) return null;
+  if (e.pred_k != null) return { pred_k: e.pred_k, probs: e.probs || null, contrib: null, values: {} };
+  const m = e[side]; if (!m) return null;
+  const fx = state.factors;
+  return { pred_k: m.k, contrib: m.c || null,
+    probs: fx ? Object.fromEntries(fx.thresholds.map((t, i) => [t, m.p[i]]).filter(([, v]) => v != null)) : null,
+    values: fx && m.v ? Object.fromEntries(fx.matchup_values.map((k, i) => [k, m.v[i]])) : {} };
+}
+const hasSides = () => Object.values(Object.values(state.matchups || {})[0] || {}).some(e => e.h || e.a);
+function parkName(p, opp, side) {
+  const host = side === "a" ? opp : p.team, park = (state.parks || {})[host];
+  return park && park.name ? park.name : `${teamName(host)} park`;
+}
+function fillOpponentSelect() {
+  const p = state.p, keep = $("teamSel").value;
+  const opps = Object.keys(state.matchups[p.id] || {}).sort((a, b) => teamName(a).localeCompare(teamName(b)));
+  $("teamSel").innerHTML = opps.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(teamName(t))}</option>`).join("");
+  $("teamSel").disabled = !opps.length;
+  if (opps.includes(keep)) $("teamSel").value = keep;
+}
+function applyOpponent() {
+  const p = state.p, opp = $("teamSel").value, m = matchupFor(p, opp, state.side);
+  if (!m) return;
+  p.opponent = opp; p.side = state.side; p.pred_k = m.pred_k; p.probs = m.probs; p.contrib = m.contrib; p.mvalues = m.values;
+  p.k_rate = Math.min(0.6, Math.max(0.02, m.pred_k / p.pred_bf)); p.actual_k = null; p.game_date = "";
+  const where = hasSides() ? ` · ${p.side === "a" ? "away" : "home"} at ${parkName(p, opp, p.side)}` : "";
+  $("simTitle").innerHTML = `${escapeHtml(p.name)} <span class="vs">${p.side === "a" ? "@" : "vs"}</span> ${escapeHtml(teamName(p.opponent))}`;
+  $("simSub").textContent = `${teamName(p.team)} · ${p.hand}HP${where} · model ${p.pred_k.toFixed(1)} K`;
+}
+function selectMatchup(i, opp) {
+  state.p = state.pitchers[i]; state.history = [];
+  $("pitcherSel").value = String(i);
+  fillOpponentSelect();
+  if (opp && [...$("teamSel").options].some(o => o.value === opp)) $("teamSel").value = opp;
+  applyOpponent();
+  lastBatch = null; $("watchRandom").disabled = true; $("watchMedian").disabled = true;
+  $("batchOut").innerHTML = `<div class="empty">The histogram, over/under lines and averages show here.</div>`;
+  flyTo("pitch", true);   // a new matchup starts from the mound camera
+  startGame(newSeed(), { instant: true });
+}
+function setMatchups(data) {
+  state.matchups = data.matchups; state.pitchers = data.list; state.parks = data.parks; state.factors = data.factors;
+  $("teamLab").textContent = "Opponent";
+  // Pitchers grouped by their own team (full names, A-Z), names A-Z within each.
+  const groups = {};
+  data.list.forEach((p, i) => { (groups[p.team] = groups[p.team] || []).push({ p, i }); });
+  const html = Object.keys(groups).sort((a, b) => teamName(a).localeCompare(teamName(b))).map(t =>
+    `<optgroup label="${escapeHtml(teamName(t))}">` + groups[t].sort((a, b) => a.p.name.localeCompare(b.p.name))
+      .map(({ p, i }) => `<option value="${i}">${escapeHtml(p.name)}</option>`).join("") + `</optgroup>`).join("");
+  $("pitcherSel").innerHTML = html; $("menuPitcher").innerHTML = html;
+  $("picks").hidden = true; $("backBtn").hidden = false;
+  // Start the menu on the last matchup picked, if there is one.
+  let last = null;
+  try { last = JSON.parse(localStorage.getItem("ksim-pick") || "null"); } catch (e) { last = null; }
+  const li = last ? data.list.findIndex(p => p.id === String(last.pid)) : -1;
+  if (li >= 0) $("menuPitcher").value = String(li);
+  setSide(last && last.side === "a" && hasSides() ? "a" : "h");
+  $("menuSide").hidden = !hasSides();
+  fillMenuOpponents(last && li >= 0 ? last.opp : null);
+  $("menuNote").textContent = `${data.list.length} pitchers · ${Object.keys(groups).length} teams`;
+  selectMatchup(Number($("menuPitcher").value), $("menuOpp").value);
+  showView("menu"); try { history.replaceState({ view: "menu" }, ""); } catch (e) { /* sandboxed */ }
+}
+function setSide(side) {
+  state.side = side;
+  document.querySelectorAll("[data-side]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.side === side)));
+}
+
+// ---------- Opening menu: pick the pitcher and his opponent, then load the sim ----------
+function fillMenuOpponents(keep) {
+  const p = state.pitchers[Number($("menuPitcher").value)];
+  const cur = keep || $("menuOpp").value;
+  const opps = Object.keys(state.matchups[p.id] || {}).sort((a, b) => teamName(a).localeCompare(teamName(b)));
+  $("menuOpp").innerHTML = opps.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(teamName(t))}</option>`).join("");
+  if (opps.includes(cur)) $("menuOpp").value = cur;
+  updateMenuPreview();
+}
+function updateMenuPreview() {
+  pitcherCombo.sync(); oppCombo.sync();
+  const p = state.pitchers[Number($("menuPitcher").value)], opp = $("menuOpp").value;
+  const m = p && matchupFor(p, opp, state.side);
+  $("menuWhere").textContent = p && opp ? `${state.side === "a" ? "Away" : "Home"} at ${parkName(p, opp, state.side)}` : "";
+  ballFx.setTeams(p && p.team, opp, state.side);
+  if (!m) { $("menuPreview").innerHTML = ""; return; }
+  const odds = ["5+", "6+", "7+"].filter(k => m.probs && m.probs[k] != null)
+    .map(k => `<span class="badge">${k} <b>${Math.round(100 * m.probs[k])}%</b></span>`).join("");
+  $("menuPreview").innerHTML = `<span class="big">${m.pred_k.toFixed(1)} K<small>model · ${escapeHtml(p.name)} (${p.hand}HP) ${state.side === "a" ? "@" : "vs"} ${escapeHtml(teamName(opp))}</small></span><span class="odds">${odds}</span>`;
+}
+function showView(view) {
+  const menu = view === "menu" && !!state.matchups;
+  const was = !$("menu").hidden;
+  $("menu").hidden = !menu; $("simView").hidden = menu;
+  window.scrollTo(0, 0);
+  if (menu && !was) { ballFx.assemble(); $("menuInner").classList.remove("enter"); void $("menuInner").offsetWidth; $("menuInner").classList.add("enter"); }
+  if (!menu) ballFx.stop();
+}
+
+/* ---------- Menu: a particle constellation of small wireframe tetrahedrons ----------
+   With no pitcher picked it's a baseball (a sphere in mixed colours with amber and red stitch rows along
+   the seam). Once a pitcher is picked, the same tetras morph into his team's logo, a thin floating 3D
+   slab, and the opponent's logo floats smaller behind and below it with a faint "vs" (phones show only
+   his team). Logos load at runtime from MLB's public CDN and are sampled into points, weighted toward the
+   edges so the shape reads; if one can't load, the team abbreviation is used instead. Everything sits in a
+   sparse field of tiny tetras with a few large soft ones in front. Tetras near the pointer ease aside and
+   spring back; the formation bursts outward when a matchup loads. */
+const TEAM_IDS = { LAA: 108, ARI: 109, BAL: 110, BOS: 111, CHC: 112, CIN: 113, CLE: 114, COL: 115, DET: 116, HOU: 117, KC: 118, LAD: 119, WSH: 120, NYM: 121,
+  ATH: 133, PIT: 134, SD: 135, SEA: 136, SF: 137, STL: 138, TB: 139, TEX: 140, TOR: 141, MIN: 142, PHI: 143, ATL: 144, CWS: 145, MIA: 146, NYY: 147, MIL: 158 };
+const ballFx = (function () {
+  const cv = $("ballfx"), c2 = cv.getContext("2d");
+  const COLS = [...FX_COLORS, "255,184,41", "235,87,87"], colIndex = new Map(COLS.map((c, i) => [c, i])), STEPS = 5;
+  const colorId = rgb => { if (!colIndex.has(rgb)) { colIndex.set(rgb, COLS.length); COLS.push(rgb); } return colIndex.get(rgb); };
+  const rng = makeRng(108), N_MAIN = 2500, N_OPP = 1000, pts = [], field = [], big = [];
+  // Baseball targets for the main group: Fibonacci sphere plus seam stitches.
+  const ballHome = [];
+  const seam = t => { const a = 0.7, b = 0.3; return V.norm([a * Math.cos(t) + b * Math.cos(3 * t), a * Math.sin(t) - b * Math.sin(3 * t), 2 * Math.sqrt(a * b) * Math.sin(2 * t)]); };
+  for (let i = 0; i < 108; i++) {
+    const t = i / 108 * Math.PI * 2, c = seam(t), tan = V.norm(V.sub(seam(t + 0.01), seam(t - 0.01))), side = V.norm(V.cross(tan, c));
+    for (const sgn of [-1, 1]) for (let j = 0; j < 4; j++) ballHome.push({ v: V.norm(V.add(c, V.add(V.mul(side, sgn * (0.035 + 0.028 * j)), V.mul(tan, 0.014 * j)))), col: FX_COLORS.length + (rng() < 0.55 ? 0 : 1), a: 0.85 + 0.15 * rng(), size: 3.5 + 2 * rng() });
+  }
+  const nBody = N_MAIN - ballHome.length, golden = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < nBody; i++) {
+    const y = 1 - 2 * (i + 0.5) / nBody, r = Math.sqrt(1 - y * y), th = i * golden;
+    ballHome.push({ v: [r * Math.cos(th), y, r * Math.sin(th)], col: pickColor(rng), a: 0.3 + 0.35 * rng(), size: 3 + 2.5 * rng() });
+  }
+  for (let i = 0; i < N_MAIN + N_OPP; i++) {
+    pts.push({ grp: i < N_MAIN ? 0 : 1, shape: i < N_MAIN ? "ball" : "none", v: [0, 0, 0], col: 0, a: 0, size: 3,
+      x: 0, y: 0, da: 0, fx: 0, fy: 0, fa: 0, delay: rng() * 200, ra: rng() * 6.28, rb: rng() * 6.28, sa: (rng() - 0.5) * 0.5, sb: (rng() - 0.5) * 0.5,
+      tw: 0.3 + 0.7 * rng(), ph: rng() * 6.28, ox: 0, oy: 0 });
+  }
+  const setBall = () => pts.forEach((p, i) => { if (p.grp === 0) { const h = ballHome[i]; Object.assign(p, { shape: "ball", v: h.v, col: h.col, a: h.a, size: h.size }); } });
+  setBall();
+  for (let gy = 0; gy < 12; gy++) for (let gx = 0; gx < 20; gx++) field.push({ fx: (gx + rng()) / 20, fy: (gy + rng()) / 12, col: pickColor(rng), size: 2.5 + 3 * rng(), a: 0.15 + 0.3 * rng() });
+  for (let i = 0; i < 8; i++) big.push({ fx: 0.05 + 0.9 * rng(), fy: 0.05 + 0.9 * rng(), col: pickColor(rng), size: 40 + 30 * rng(), a: 0.1 + 0.12 * rng(), depth: 0.4 + 0.6 * rng() });
+  [...field, ...big].forEach(p => { p.sx = rng(); p.sy = rng(); p.delay = rng() * 150; p.ra = rng() * 6.28; p.rb = rng() * 6.28; p.sa = (rng() - 0.5) * 0.5; p.sb = (rng() - 0.5) * 0.5; p.tw = 0.3 + 0.7 * rng(); p.ph = rng() * 6.28; p.ox = 0; p.oy = 0; });
+
+  // ---- Logos: rasterise, sample points (edges weighted), colour toward the theme ----
+  const logoCache = new Map();
+  const PALETTE = FX_COLORS.map(c => c.split(",").map(Number));
+  function themeColor(r, g, b) {
+    // Nudge 25% toward the nearest theme colour, then lift dark colours so they show on black; quantise for batching.
+    let best = PALETTE[0], bd = 1e9;
+    for (const q of PALETTE) { const d = (q[0] - r) ** 2 + (q[1] - g) ** 2 + (q[2] - b) ** 2; if (d < bd) { bd = d; best = q; } }
+    let c = [r, g, b].map((v, i) => v * 0.75 + best[i] * 0.25);
+    const lum = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    if (lum < 120) { const k = (120 - lum) / 120 * 0.7; c = c.map(v => v + (255 - v) * k); }
+    return c.map(v => Math.min(255, Math.round(v / 24) * 24)).join(",");
+  }
+  function sampleCanvas(ctx2, n, edgeShare = 0.45) {
+    const S = ctx2.canvas.width, d = ctx2.getImageData(0, 0, S, S).data, solid = [], edge = [];
+    const A = (x, y) => (x < 0 || y < 0 || x >= S || y >= S) ? 0 : d[(y * S + x) * 4 + 3];
+    for (let y = 0; y < S; y += 2) for (let x = 0; x < S; x += 2) {
+      const i = (y * S + x) * 4; if (d[i + 3] < 128) continue;
+      const isEdge = A(x - 3, y) < 128 || A(x + 3, y) < 128 || A(x, y - 3) < 128 || A(x, y + 3) < 128;
+      (isEdge ? edge : solid).push(i);
+    }
+    if (!solid.length && !edge.length) return null;
+    const out = [], pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    for (let k = 0; k < n; k++) {
+      const arr = (k < n * edgeShare && edge.length) || !solid.length ? edge : solid, i = pick(arr), px = (i / 4) % S, py = Math.floor(i / 4 / S);
+      out.push({ v: [(px + Math.random() * 2 - S / 2) / (S / 2), -(py + Math.random() * 2 - S / 2) / (S / 2), (Math.random() * 2 - 1) * 0.07], rgb: themeColor(d[i], d[i + 1], d[i + 2]) });
+    }
+    return out;
+  }
+  function textLogo(abbr, n) {
+    const S = 400, oc = document.createElement("canvas"); oc.width = oc.height = S;
+    const g = oc.getContext("2d", { willReadFrequently: true }); g.fillStyle = "#b48cff"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.font = `700 ${abbr.length > 2 ? 150 : 200}px Inter, system-ui, sans-serif`; g.fillText(abbr, S / 2, S / 2);
+    return sampleCanvas(g, n, 0.5);
+  }
+  function loadLogo(abbr, n) {
+    const key = abbr + ":" + n;
+    if (logoCache.has(key)) return logoCache.get(key);
+    const id = TEAM_IDS[abbr];
+    const tryUrl = url => new Promise((res, rej) => {
+      const img = new Image(); img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const S = 400, oc = document.createElement("canvas"); oc.width = oc.height = S;
+          const g = oc.getContext("2d", { willReadFrequently: true }); g.drawImage(img, 20, 20, S - 40, S - 40);
+          const out = sampleCanvas(g, n); out ? res(out) : rej(new Error("empty"));
+        } catch (e) { rej(e); }
+      };
+      img.onerror = () => rej(new Error("load"));
+      img.src = url;
+    });
+    const p = (id ? tryUrl(`https://www.mlbstatic.com/team-logos/${id}.svg`).catch(() => tryUrl(`https://www.mlbstatic.com/team-logos/team-cap-on-dark/${id}.svg`)) : Promise.reject())
+      .catch(() => textLogo(abbr, n));
+    logoCache.set(key, p);
+    return p;
+  }
+
+  let Wc = 0, Hc = 0, dpr = 1, raf = 0, t0 = 0, last = 0, morphAt = -1e9, burst = null, pointer = null, teams = { a: null, b: null, side: "h" }, want = "";
+  function size() {
+    const r = cv.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio || 1, 2);
+    Wc = r.width; Hc = r.height; cv.width = Math.round(Wc * dpr); cv.height = Math.round(Hc * dpr);
+  }
+  // Wide screens: the formation fills the space right of the form (opponent offset behind and below).
+  // Narrow: only the main one, centred behind the form, faint.
+  function layout() {
+    const box = $("menuInner").getBoundingClientRect(), free = Wc - box.right - 48;
+    if (free >= 300) {
+      cv.classList.remove("faint");
+      const cx = box.right + 24 + free / 2, R = Math.min(free / 2 - 16, Hc * 0.34), logo = teams.a != null;
+      return { wide: true, cx: logo ? cx - R * 0.22 : cx, cy: logo ? Hc * 0.36 : Hc / 2, R: logo ? R * 0.66 : R };
+    }
+    cv.classList.add("faint"); return { wide: false, cx: Wc / 2, cy: Hc * 0.45, R: Math.min(Wc * 0.42, Hc * 0.3) };
+  }
+  const easeOut = u => 1 - Math.pow(1 - u, 3);
+  const NUDGE_R = 70, NUDGE_MAX = 15;
+  function nudge(p, x, y, k) {
+    let tx = 0, ty = 0;
+    if (pointer) {
+      const dx = x - pointer.x, dy = y - pointer.y, d = Math.hypot(dx, dy);
+      if (d < NUDGE_R && d > 0.01) { const f = NUDGE_MAX * Math.pow(1 - d / NUDGE_R, 2) / d; tx = dx * f; ty = dy * f; }
+    }
+    p.ox += (tx - p.ox) * k; p.oy += (ty - p.oy) * k;
+    return Math.abs(p.ox) + Math.abs(p.oy) > 0.05;
+  }
+  // Start a morph: every tetra glides from where it is now to its new target (about 900 ms, eased, staggered).
+  function beginMorph(scatter) {
+    const now = performance.now();
+    pts.forEach(p => {
+      if (scatter) { p.fx = Wc * (Math.random() * 1.3 - 0.15); p.fy = Hc * (Math.random() * 1.3 - 0.15); p.fa = 0; }
+      else { p.fx = p.x; p.fy = p.y; p.fa = p.da; }
+    });
+    field.forEach(p => { if (scatter) { p.sx = Math.random(); p.sy = Math.random(); } });
+    morphAt = now; start();
+  }
+  function applyTeams(a, b, side) {
+    const key = [a, b, side, Wc >= 900 ? "w" : "n"].join("|");
+    if (key === want) return;
+    want = key;
+    if (!a) { teams = { a: null, b: null, side }; setBall(); pts.forEach(p => { if (p.grp === 1) p.shape = "none"; }); beginMorph(false); return; }
+    Promise.all([loadLogo(a, N_MAIN), b ? loadLogo(b, N_OPP) : Promise.resolve(null)]).then(([la, lb]) => {
+      if (want !== key) return;
+      teams = { a, b, side };
+      pts.forEach((p, i) => {
+        const src = p.grp === 0 ? la[i] : lb && lb[i - N_MAIN];
+        if (!src) { p.shape = "none"; return; }
+        Object.assign(p, { shape: "logo", v: src.v, col: colorId(src.rgb), a: p.grp === 0 ? 0.55 + 0.4 * Math.random() : 0.35 + 0.3 * Math.random(), size: p.grp === 0 ? 3 + 2.2 * Math.random() : 2.5 + 1.5 * Math.random() });
+      });
+      beginMorph(false);
+    });
+  }
+  function draw(now) {
+    raf = 0;
+    if ($("menu").hidden) return;
+    const still = reducedMotion(), t = still ? 0 : (now - t0) / 1000;
+    const dt = last ? Math.min(100, now - last) : 16, k = 1 - Math.exp(-dt / 120);
+    last = now;
+    const L = layout(), { cx, cy, R } = L;
+    const yawBall = 0.6 + t * 0.05, pitch = 0.35, cyw = Math.cos(yawBall), syw = Math.sin(yawBall), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const bu = burst ? clamp((now - burst.t0) / burst.ms, 0, 1) : 0, be = easeOut(bu), since = now - morphAt;
+    // Logo frames: a slow sway within about +-20 deg of yaw, plus a gentle bob.
+    const frames = [
+      { cx, cy: cy + 8 * Math.sin(t * 0.6), R, yaw: 0.34 * Math.sin(t * 0.12), alpha: 1 },
+      { cx: cx + R * 1.1, cy: cy + R * 1.3 + 6 * Math.sin(t * 0.5 + 2), R: R * 0.45, yaw: 0.34 * Math.sin(t * 0.1 + 1.5), alpha: 0.6 },
+    ];
+    const showOpp = L.wide && teams.b;
+    const paths = new Array(COLS.length * STEPS);
+    let moving = since < 1200;
+    for (const p of pts) {
+      // Target for this tetra: on the ball, on a logo, or nowhere (fades out where it is).
+      let tx, ty, ta, ts;
+      if (p.shape === "ball") {
+        const [vx, vy, vz] = p.v, x1 = vx * cyw + vz * syw, z1 = -vx * syw + vz * cyw, y2 = vy * cp - z1 * sp, z2 = vy * sp + z1 * cp, q = 3.2 / (3.2 - z2);
+        tx = cx + x1 * R * q; ty = cy - y2 * R * q; ta = p.a * (0.1 + 0.9 * Math.pow((z2 + 1) / 2, 1.6)); ts = p.size * q * (0.85 + 0.3 * (R / 260));
+      } else if (p.shape === "logo" && (p.grp === 0 || showOpp)) {
+        const f = frames[p.grp], [vx, vy, vz] = p.v, c = Math.cos(f.yaw), s = Math.sin(f.yaw), x1 = vx * c + vz * s, z1 = -vx * s + vz * c, q = 3.2 / (3.2 - z1);
+        tx = f.cx + x1 * f.R * q; ty = f.cy - vy * f.R * q; ta = p.a * f.alpha; ts = p.size * q;
+      } else { tx = p.x; ty = p.y; ta = 0; ts = p.size; }
+      if (!still) ta *= 0.85 + 0.15 * Math.sin(t * p.tw + p.ph);
+      const u = still ? 1 : clamp((since - p.delay) / 700, 0, 1), e = easeInOut(u);
+      let x = lerp(p.fx, tx, e), y = lerp(p.fy, ty, e), a = lerp(p.fa, ta, e);
+      p.x = x; p.y = y; p.da = a;
+      if (bu > 0) { x += (x - cx) * 2.2 * be; y += (y - cy) * 2.2 * be; a *= 1 - bu; }
+      if (nudge(p, x, y, k)) moving = true;
+      if (a < 0.02) continue;
+      const kk = p.col * STEPS + clamp(Math.floor(a * STEPS), 0, STEPS - 1);
+      addTetra(paths[kk] || (paths[kk] = new Path2D()), x + p.ox, y + p.oy, ts / 2, p.ra + t * p.sa, p.rb + t * p.sb);
+    }
+    for (const p of field) {
+      let x = p.fx * Wc + 10 * Math.sin(t * 0.05 + p.ph), y = p.fy * Hc + 8 * Math.cos(t * 0.04 + p.ph), a = p.a;
+      if (!still) a *= 0.85 + 0.15 * Math.sin(t * p.tw + p.ph);
+      const u = still ? 1 : clamp((since - p.delay) / 650, 0, 1);
+      if (u < 1 && morphAt === p.morphAt) { const e = easeInOut(u); x = lerp(p.sx * Wc, x, e); y = lerp(p.sy * Hc, y, e); a *= 0.25 + 0.75 * e; }
+      if (bu > 0) { x += (x - cx) * 2.2 * be; y += (y - cy) * 2.2 * be; a *= 1 - bu; }
+      if (nudge(p, x, y, k)) moving = true;
+      const kk = p.col * STEPS + clamp(Math.floor(a * STEPS), 0, STEPS - 1);
+      addTetra(paths[kk] || (paths[kk] = new Path2D()), x + p.ox, y + p.oy, p.size / 2, p.ra + t * p.sa, p.rb + t * p.sb);
+    }
+    c2.setTransform(dpr, 0, 0, dpr, 0, 0); c2.clearRect(0, 0, Wc, Hc);
+    c2.lineJoin = "round"; c2.lineWidth = 1;
+    paths.forEach((path, kk) => { if (path) { c2.strokeStyle = `rgba(${COLS[Math.floor(kk / STEPS)]},${(kk % STEPS + 1) / STEPS})`; c2.stroke(path); } });
+    // A faint "vs" (or "@") between the two logos.
+    if (showOpp) {
+      const f = frames[1], va = 0.35 * clamp(since / 900, 0, 1) * (1 - bu);
+      c2.font = "400 18px Inter, system-ui, sans-serif"; c2.textAlign = "center"; c2.fillStyle = `rgba(208,214,224,${va})`;
+      c2.fillText(teams.side === "a" ? "@" : "vs", (cx + f.cx) / 2 + R * 0.2, (cy + f.cy) / 2 + R * 0.25);
+    }
+    c2.lineWidth = 1.5;
+    for (const p of big) {
+      const x = p.fx * Wc + 40 * p.depth * Math.sin(t * 0.03 + p.ph), y = p.fy * Hc + 30 * p.depth * Math.cos(t * 0.025 + p.ph);
+      const a = p.a * (still ? 1 : easeInOut(clamp(since / 650, 0, 1))) * (1 - bu);
+      if (a < 0.01) continue;
+      const path = new Path2D(), col = COLS[p.col];
+      addTetra(path, x, y, p.size * (0.6 + 0.4 * p.depth) / 2, p.ra + t * p.sa * 0.5, p.rb + t * p.sb * 0.5);
+      c2.shadowColor = `rgba(${col},${Math.min(1, a * 3)})`; c2.shadowBlur = 14;
+      c2.strokeStyle = `rgba(${col},${a})`; c2.stroke(path);
+    }
+    c2.shadowBlur = 0;
+    if (burst && bu >= 1) { const done = burst.done; burst = null; done(); return; }
+    if (!still || burst || moving || pointer) start();
+  }
+  function start() { if (!raf && !document.hidden && !$("menu").hidden) raf = requestAnimationFrame(draw); }
+  function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; last = 0; }
+  const leave = () => { pointer = null; start(); };
+  window.addEventListener("pointermove", e => { if ($("menu").hidden) return; pointer = { x: e.clientX, y: e.clientY }; start(); }, { passive: true });
+  window.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") leave(); });
+  window.addEventListener("pointercancel", leave);
+  document.documentElement.addEventListener("mouseleave", leave);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); else start(); });
+  new ResizeObserver(() => { size(); start(); }).observe(cv);
+  window.addEventListener("resize", () => { size(); start(); });
+  return {
+    // Menu appears: everything flies in from scattered spots.
+    assemble() {
+      size(); if (!t0) t0 = performance.now(); burst = null;
+      pts.forEach(p => { p.ox = p.oy = 0; }); beginMorph(true); field.forEach(p => { p.morphAt = morphAt; });
+    },
+    setTeams(a, b, side) { applyTeams(a || null, b || null, side || "h"); },
+    burst(done) {
+      if (reducedMotion() || $("menu").hidden) { done(); return; }
+      let called = false;
+      const once = () => { if (!called) { called = true; done(); } };
+      burst = { t0: performance.now(), ms: 500, done: once }; start();
+      setTimeout(() => { burst = null; once(); }, 650);   // in case frames are throttled
+    },
+    stop,
+  };
+})();
+function loadMenuMatchup() {
+  const i = Number($("menuPitcher").value), opp = $("menuOpp").value;
+  try { localStorage.setItem("ksim-pick", JSON.stringify({ pid: state.pitchers[i].id, opp, side: state.side })); } catch (e) { /* storage blocked */ }
+  rememberPick(state.pitchers[i].id, opp);
+  selectMatchup(i, opp);
+  showView("sim"); try { history.pushState({ view: "sim" }, ""); } catch (e) { /* sandboxed */ }
+}
+// Type-ahead search over a hidden <select>: the select keeps the value, the input shows suggestions.
+const fold = t => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+function combo(inputId, listId, selectId, opts = {}) {
+  const input = $(inputId), list = $(listId), sel = $(selectId), maxShown = opts.max || 8;
+  const valid = () => input.value === current();
+  const report = () => opts.onValid && opts.onValid(valid());
+  let shown = [], active = -1;
+  const items = () => [...sel.options].map(o => ({ value: o.value, label: o.text, alias: o.dataset.alias || "",
+    sub: o.parentElement.tagName === "OPTGROUP" ? o.parentElement.label : o.value }));
+  const current = () => sel.selectedOptions[0] ? sel.selectedOptions[0].text : "";
+  function mark(label, q) {
+    const i = q ? fold(label).indexOf(q) : -1;
+    if (i < 0) return escapeHtml(label);
+    return escapeHtml(label.slice(0, i)) + "<mark>" + escapeHtml(label.slice(i, i + q.length)) + "</mark>" + escapeHtml(label.slice(i + q.length));
+  }
+  function render() {
+    const raw = input.value.trim(), q = fold(raw === current() ? "" : raw);
+    const scored = [];
+    if (!q) {   // empty box: recent picks first, then A-Z
+      const all = items(), recent = (opts.recent ? opts.recent() : []).map(v => all.find(it => it.value === v)).filter(Boolean);
+      const rest = all.filter(it => !recent.includes(it)).sort((a, b) => a.label.localeCompare(b.label));
+      shown = [...recent, ...rest].slice(0, maxShown);
+      const nRecent = Math.min(recent.length, shown.length);
+      active = shown.findIndex(it => it.value === sel.value);
+      list.innerHTML = shown.map((it, i) => (i === 0 && nRecent ? `<li class="head" aria-hidden="true">Recent</li>` : "")
+        + (i === nRecent && nRecent ? `<li class="head" aria-hidden="true">A–Z</li>` : "")
+        + `<li role="option" id="${listId}-${i}" data-i="${i}" aria-selected="${i === active}"><span>${escapeHtml(it.label)}</span><span class="sub">${escapeHtml(it.sub)}</span></li>`).join("");
+      list.hidden = false; input.setAttribute("aria-expanded", "true"); setActive(active);
+      return;
+    }
+    for (const it of items()) {
+      const l = fold(it.label), sb = fold(it.sub + " " + (it.alias || ""));
+      // Best: name starts with it; then a word in the name does; then anywhere in the name; then the team.
+      const r = l.startsWith(q) ? 0 : l.split(/[\s.'-]+/).some(w => w.startsWith(q)) ? 1 : l.includes(q) ? 2 : sb.includes(q) ? 3 : -1;
+      if (r >= 0) scored.push({ ...it, r });
+    }
+    scored.sort((a, b) => a.r - b.r || a.label.localeCompare(b.label));
+    shown = scored.slice(0, maxShown);
+    active = shown.length ? Math.max(0, shown.findIndex(it => it.value === sel.value && !q)) : -1;
+    list.innerHTML = shown.length ? shown.map((it, i) => `<li role="option" id="${listId}-${i}" data-i="${i}" aria-selected="${i === active}"><span>${mark(it.label, q)}</span><span class="sub">${escapeHtml(it.sub)}</span></li>`).join("")
+      : `<li class="none" aria-disabled="true">No match for “${escapeHtml(raw)}”</li>`;
+    list.hidden = false; input.setAttribute("aria-expanded", "true");
+    setActive(active);
+  }
+  function setActive(i) {
+    active = i;
+    const rows = [...list.querySelectorAll("li[data-i]")];
+    rows.forEach((li, j) => li.setAttribute("aria-selected", String(j === i)));
+    if (i >= 0 && rows[i]) { rows[i].scrollIntoView({ block: "nearest" }); input.setAttribute("aria-activedescendant", `${listId}-${i}`); }
+    else input.removeAttribute("aria-activedescendant");
+  }
+  function close() { list.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); }
+  function choose(i) {
+    const it = shown[i]; if (!it) return;
+    if (sel.value !== it.value) { sel.value = it.value; sel.dispatchEvent(new Event("change")); }
+    input.value = it.label; close(); report();
+  }
+  // Focus selects the current name, so typing replaces it (the mouseup after a click would undo a plain select()).
+  let justFocused = false;
+  input.addEventListener("focus", () => { justFocused = true; input.select(); render(); });
+  input.addEventListener("mouseup", e => { if (justFocused) { e.preventDefault(); input.select(); } justFocused = false; });
+  input.addEventListener("input", () => { render(); report(); });
+  input.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault(); if (list.hidden) { render(); return; }
+      const n = shown.length; if (!n) return;
+      setActive(((active < 0 ? (e.key === "ArrowDown" ? -1 : 0) : active) + (e.key === "ArrowDown" ? 1 : n - 1)) % n);
+    } else if (e.key === "Enter") {
+      if (!list.hidden && active >= 0) { e.preventDefault(); choose(active); }
+    } else if (e.key === "Escape") { input.value = current(); close(); report(); }
+  });
+  list.addEventListener("mousedown", e => { const li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); choose(Number(li.dataset.i)); } });
+  input.addEventListener("blur", () => { close(); input.value = current(); report(); });
+  return { sync() { if (document.activeElement !== input) input.value = current(); report(); }, valid };
+}
+// Recent picks (newest first), kept in this browser only.
+function recentPicks() { try { return JSON.parse(localStorage.getItem("ksim-recent") || "[]"); } catch (e) { return []; } }
+function rememberPick(pid, opp) {
+  const r = [{ pid, opp }, ...recentPicks().filter(x => !(x.pid === pid && x.opp === opp))].slice(0, 8);
+  try { localStorage.setItem("ksim-recent", JSON.stringify(r)); } catch (e) { /* storage blocked */ }
+}
+const uniq = a => [...new Set(a)];
+const menuValid = () => { $("menuGo").disabled = !(pitcherCombo.valid() && oppCombo.valid() && $("menuOpp").value); };
+const pitcherCombo = combo("menuPitcherInput", "menuPitcherList", "menuPitcher", {
+  onValid: () => menuValid(),
+  recent: () => uniq(recentPicks().map(x => String(state.pitchers.findIndex(p => p.id === String(x.pid))))).filter(i => i !== "-1").slice(0, 3),
+});
+const oppCombo = combo("menuOppInput", "menuOppList", "menuOpp", {
+  onValid: () => menuValid(),
+  recent: () => uniq(recentPicks().map(x => x.opp)).slice(0, 3),
+});
+
+$("menuPitcher").addEventListener("change", () => fillMenuOpponents());
+$("menuOpp").addEventListener("change", updateMenuPreview);
+document.querySelectorAll("[data-side]").forEach(b => b.addEventListener("click", () => { setSide(b.dataset.side); updateMenuPreview(); }));
+$("menuGo").addEventListener("click", () => { if (!$("menuGo").disabled && !$("menuGo").dataset.busy) { $("menuGo").dataset.busy = "1"; ballFx.burst(() => { delete $("menuGo").dataset.busy; loadMenuMatchup(); }); } });
+$("backBtn").addEventListener("click", () => {
+  $("menuPitcher").value = $("pitcherSel").value; fillMenuOpponents($("teamSel").value);
+  if (history.state && history.state.view === "sim") history.back(); else showView("menu");
+});
+window.addEventListener("popstate", e => showView(e.state && e.state.view === "sim" ? "sim" : "menu"));
+// Team picker: "All teams" plus every team in the data, by full name; the pitcher list shows only that team.
+function fillTeamSelect() {
+  const teams = [...new Set(state.pitchers.map(p => p.team).filter(Boolean))].sort((a, b) => teamName(a).localeCompare(teamName(b)));
+  $("teamSel").innerHTML = `<option value="">All teams</option>` + teams.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(teamName(t))}</option>`).join("");
+  $("teamSel").disabled = !teams.length;
+}
+function fillPitcherSelect() {
+  const team = $("teamSel").value;
+  $("pitcherSel").innerHTML = state.pitchers.map((p, i) => ({ p, i })).filter(({ p }) => !team || p.team === team)
+    .sort((a, b) => a.p.name.localeCompare(b.p.name)).map(({ p, i }) => `<option value="${i}">${escapeHtml(p.name)}</option>`).join("");
+}
+function newSeed() { return (Math.random() * 4294967295) >>> 0; }
+function selectPitcher(i) {
+  state.p = state.pitchers[i]; state.history = [];
+  if (state.p.team && $("teamSel").value && $("teamSel").value !== state.p.team) { $("teamSel").value = ""; fillPitcherSelect(); }
+  $("pitcherSel").value = String(i);
+  startGame(newSeed(), { instant: true });
+}
+function setPitchers(list) {
+  state.matchups = null; $("teamLab").textContent = "Team";
+  $("picks").hidden = false; $("backBtn").hidden = true; showView("sim");
+  $("simTitle").textContent = "Strikeout Sim"; $("simSub").textContent = "Each simulated start, shown as its strikeout pitches.";
+  state.pitchers = list; fillTeamSelect(); fillPitcherSelect();
+  lastBatch = null; $("watchRandom").disabled = true; $("watchMedian").disabled = true;
+  $("batchOut").innerHTML = `<div class="empty">The histogram, over/under lines and averages show here.</div>`;
+  selectPitcher(0);
+}
+// ---------- Wire up ----------
+$("pitcherSel").addEventListener("change", e => (state.matchups ? selectMatchup : selectPitcher)(Number(e.target.value)));
+$("teamSel").addEventListener("change", () => {
+  if (state.matchups) { state.history = []; applyOpponent(); lastBatch = null; $("watchRandom").disabled = true; $("watchMedian").disabled = true;
+    $("batchOut").innerHTML = `<div class="empty">The histogram, over/under lines and averages show here.</div>`; startGame(newSeed(), { instant: true }); return; }
+  fillPitcherSelect(); if ($("pitcherSel").options.length) selectPitcher(Number($("pitcherSel").value));
+});
+$("redoBtn").addEventListener("click", () => { startGame(newSeed()); });
+$("seedBtn").addEventListener("click", () => {
+  const v = Number(String($("seedInput").value).trim());
+  if (!Number.isFinite(v) || v < 0) { $("seedInput").value = String(state.seed); return; }
+  startGame(Math.floor(v) >>> 0);
+});
+document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => {
+  if (b.dataset.view === state.view) return;
+  if (b.dataset.view === "ump") { state.pi = state.game.ks.length; state.finished = true; setHud(); updateSide(); flyTo("ump"); }
+  else { startGame(state.seed); }
+}));
+$("runs").addEventListener("click", e => { const li = e.target.closest("li[data-seed]"); if (li) { startGame(Number(li.dataset.seed)); } });
+$("runs").addEventListener("keydown", e => { if (e.key === "Enter") { const li = e.target.closest("li[data-seed]"); if (li) li.click(); } });
+$("stage").addEventListener("click", hideTip);
+document.querySelectorAll("[data-n]").forEach(b => b.addEventListener("click", () => { $("nGames").value = b.dataset.n; }));
+$("runBtn").addEventListener("click", runBatchUI);
+$("watchRandom").addEventListener("click", () => watchFromBatch("random"));
+$("watchMedian").addEventListener("click", () => watchFromBatch("median"));
+// ---------- Orbit controls: drag orbits, wheel/pinch zooms, right-drag or two fingers pan ----------
+const gest = { pts: new Map(), pan: false, moved: 0 };
+function orbitBy(dx, dy) { orbit.yaw -= dx * 0.006; orbit.pitch += dy * 0.006; clampOrbit(orbit); }
+function panBy(dx, dy) {
+  if (!W || !H) return;
+  const wpp = Math.hypot(...V.sub(cam.target, cam.pos)) / cam.focal;   // feet per pixel at the target
+  orbit.target = V.add(orbit.target, V.add(V.mul(cam.r, -dx * wpp), V.mul(cam.u, dy * wpp)));
+  clampOrbit(orbit);
+}
+function zoomBy(f) { orbit.dist *= f; clampOrbit(orbit); }
+canvas.addEventListener("pointerdown", e => {
+  takeControl();
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointer */ }
+  gest.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (gest.pts.size === 1) { gest.pan = e.button === 2 || e.button === 1 || e.shiftKey; gest.moved = 0; }
+  canvas.classList.add("grabbing");
+});
+canvas.addEventListener("pointermove", e => {
+  const prev = gest.pts.get(e.pointerId); if (!prev) return;
+  const cur = { x: e.clientX, y: e.clientY };
+  if (gest.pts.size === 1) {
+    const dx = cur.x - prev.x, dy = cur.y - prev.y;
+    gest.moved += Math.abs(dx) + Math.abs(dy);
+    if (gest.pan) panBy(dx, dy); else orbitBy(dx, dy);
+  } else if (gest.pts.size === 2) {
+    const other = [...gest.pts.entries()].find(([id]) => id !== e.pointerId)[1];
+    const d0 = Math.hypot(prev.x - other.x, prev.y - other.y), d1 = Math.hypot(cur.x - other.x, cur.y - other.y);
+    if (d0 > 0 && d1 > 0) zoomBy(d0 / d1);
+    panBy((cur.x - prev.x) / 2, (cur.y - prev.y) / 2);   // the midpoint moves half as far as one finger
+    gest.moved += 10;
+  }
+  gest.pts.set(e.pointerId, cur);
+});
+function endPointer(e) {
+  gest.pts.delete(e.pointerId);
+  if (!gest.pts.size) canvas.classList.remove("grabbing");
+  else gest.pan = true;   // lifting one of two fingers: the other keeps panning, not orbiting
+}
+canvas.addEventListener("pointerup", endPointer);
+canvas.addEventListener("pointercancel", endPointer);
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+canvas.addEventListener("wheel", e => {
+  e.preventDefault(); takeControl();
+  const dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * H : e.deltaY;
+  zoomBy(Math.exp(clamp(dy, -200, 200) * 0.0015));
+}, { passive: false });
+$("resetView").addEventListener("click", resetView);
+
+// ---------- Cube icons for the bottom-right buttons ----------
+// Each button with data-cube gets a small canvas with a glowing wireframe cube that turns slowly.
+// Hover pushes the 12 edges apart from the centre with extra spin; they spring back (about 600 ms)
+// when the pointer leaves. Press gives a quick inward pulse. Selected buttons get a brighter cube
+// with a faint filled face; switched-off filters a dim, slow one.
+const cubeIcons = (function () {
+  const V8 = []; for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) V8.push([x, y, z]);
+  const E12 = []; for (let i = 0; i < 8; i++) for (let j = i + 1; j < 8; j++) { const d = V8[i].reduce((a, v, k) => a + (v !== V8[j][k]), 0); if (d === 1) E12.push([i, j]); }
+  const T6 = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]];
+  const FACES = [[0, 1, 3, 2], [4, 5, 7, 6], [0, 1, 5, 4], [2, 3, 7, 6], [0, 2, 6, 4], [1, 3, 7, 5]];
+  const items = [];
+  let raf = 0, last = 0;
+  function scan() {
+    document.querySelectorAll(".dock-right [data-cube], .menu-side [data-cube], .combo[data-cube]").forEach(btn => {
+      if (btn._cube) return;
+      const cv = document.createElement("canvas"); cv.className = "cube"; cv.setAttribute("aria-hidden", "true");
+      btn.prepend(cv);
+      const it = { btn, cv, ra: Math.random() * 6.28, rb: 0.5 + Math.random(), spin: 4, push: 0, pushT: 0, pulse: 0, hover: false, born: performance.now() };
+      btn._cube = it;
+      btn.addEventListener("pointerenter", () => { it.hover = true; it.spin += 5; start(); });
+      btn.addEventListener("pointerleave", () => { it.hover = false; start(); });
+      btn.addEventListener("focusin", () => { it.hover = btn.matches(":focus-visible") || btn.classList.contains("combo"); start(); });
+      btn.addEventListener("focusout", () => { it.hover = false; start(); });
+      btn.addEventListener("pointerdown", () => { it.pulse = 1; start(); });
+      items.push(it);
+    });
+    for (let i = items.length - 1; i >= 0; i--) if (!items[i].btn.isConnected) items.splice(i, 1);
+    start();
+  }
+  function draw(now) {
+    raf = 0;
+    const still = reducedMotion(), dt = last ? Math.min(0.1, (now - last) / 1000) : 0.016;
+    last = now;
+    if (document.hidden) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    for (const it of items) {
+      const { cv, btn } = it, w = cv.clientWidth; if (!w || !btn.offsetParent) continue;
+      if (cv.width !== Math.round(w * dpr)) { cv.width = cv.height = Math.round(w * dpr); }
+      const g = cv.getContext("2d"), col = btn.dataset.cube;
+      const on = btn.getAttribute("aria-pressed") === "true", off = btn.getAttribute("aria-pressed") === "false" && btn.classList.contains("chip");
+      // Spring the edge spread toward its target (about 600 ms to settle), decay the spin boost and the press pulse.
+      const k = 1 - Math.exp(-dt / 0.12);
+      it.push += ((it.hover && !still ? 1 : 0) - it.push) * k;
+      it.spin += ((off ? 0.15 : 0.5) - it.spin) * (1 - Math.exp(-dt / 0.4));
+      it.pulse = Math.max(0, it.pulse - dt * 5);
+      if (!still) { it.ra += dt * it.spin; it.rb += dt * it.spin * 0.45; }
+      const intro = still ? 1 : easeInOut(clamp((now - it.born) / 500, 0, 1));
+      const ca = Math.cos(it.ra), sa = Math.sin(it.ra), cb = Math.cos(it.rb), sb = Math.sin(it.rb);
+      const c = w / 2, r = w * 0.2 * intro * (1 - 0.25 * it.pulse) * (on ? 1.08 : 1);
+      const tetra = btn.dataset.shape === "tetra", VV = tetra ? TETRA.map(v => V.mul(v, 1.35)) : V8, EE = tetra ? T6 : E12;
+      const P = VV.map(([x, y, z]) => { const x1 = x * ca + z * sa, z1 = -x * sa + z * ca, y2 = y * cb - z1 * sb, z2 = y * sb + z1 * cb, q = 3.4 / (3.4 - z2); return [c + x1 * r * q, c - y2 * r * q]; });
+      g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, w);
+      const glow = it.hover ? 1 : on ? 0.8 : off ? 0.15 : 0.45, alpha = off ? 0.45 : on || it.hover ? 1 : 0.8;
+      if (on && !tetra) { g.fillStyle = `rgba(${col},0.08)`; for (const f of FACES) { g.beginPath(); f.forEach((v, i) => i ? g.lineTo(...P[v]) : g.moveTo(...P[v])); g.closePath(); g.fill(); } }
+      g.lineWidth = 1.3; g.lineCap = "round"; g.strokeStyle = `rgba(${col},${alpha})`;
+      g.shadowColor = `rgba(${col},${glow})`; g.shadowBlur = 4 + 8 * glow;
+      g.beginPath();
+      for (const [a, b] of EE) {
+        // Hover: each edge slides out from the centre along its own midpoint direction (up to ~3.5 px).
+        const mx = (P[a][0] + P[b][0]) / 2 - c, my = (P[a][1] + P[b][1]) / 2 - c, ml = Math.hypot(mx, my) || 1, d = 3.5 * it.push;
+        const ox = mx / ml * d, oy = my / ml * d;
+        g.moveTo(P[a][0] + ox, P[a][1] + oy); g.lineTo(P[b][0] + ox, P[b][1] + oy);
+      }
+      g.stroke();
+    }
+    if (items.length) start();
+  }
+  function start() { if (!raf && !document.hidden) raf = requestAnimationFrame(draw); }
+  document.addEventListener("visibilitychange", () => { last = 0; start(); });
+  return { scan, start };
+})();
+cubeIcons.scan();
+
+// ---------- Menu overlay: entries with glowing tetra icons, then one section at a time ----------
+// The icons and the background tetras are drawn on the overlay's canvas at the positions of the
+// .ico placeholders, easing toward them each frame, so flying in, moving to a section header and
+// flying out are all the same motion toward a new target.
+const menuOv = (function () {
+  const ov = $("ov"), cv = $("ovfx"), c2 = cv.getContext("2d");
+  const ICON_COLS = ["128,82,255", "43,179,160", "255,184,41", "236,239,244"];
+  const SEC = { factors: ["Details", 0], run: ["This run", 1], runs: ["Runs", 2], batch: ["Run many games", 3] };
+  const rng = makeRng(77), field = [];
+  for (let gy = 0; gy < 10; gy++) for (let gx = 0; gx < 18; gx++) field.push({ fx: (gx + rng()) / 18, fy: (gy + rng()) / 10, col: pickColor(rng), size: 2.5 + 3 * rng(), a: 0.15 + 0.3 * rng(), ra: rng() * 6.28, rb: rng() * 6.28, sa: (rng() - 0.5) * 0.4, sb: (rng() - 0.5) * 0.4, ph: rng() * 6.28 });
+  const corners = [{ fx: 0.02, fy: 0.1, size: 300, col: 0, ra: 0.4, rb: 1.1 }, { fx: 0.98, fy: 0.92, size: 360, col: 2, ra: 2.2, rb: 0.3 }];
+  const icons = [0, 1, 2, 3].map(() => ({ x: 0, y: 0, s: 0, a: 0, ra: rng() * 6.28, rb: rng() * 6.28, start: 0 }));
+  let isOpen = false, section = null, raf = 0, last = 0, Wc = 0, Hc = 0, dpr = 1, hideTimer = 0;
+  const state_ = { covering: false };
+  function size() { dpr = Math.min(window.devicePixelRatio || 1, 2); Wc = innerWidth; Hc = innerHeight; cv.width = Math.round(Wc * dpr); cv.height = Math.round(Hc * dpr); }
+  const rectOf = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, s: r.width }; };
+  const scattered = () => ({ x: Wc * (Math.random() * 1.4 - 0.2), y: Hc * (Math.random() * 1.4 - 0.2), s: 0, a: 0 });
+  function target(i) {
+    if (!isOpen) return null;   // closing: keep flying out
+    if (section) {
+      if (SEC[section][1] === i && !$("ovSec").hidden) return { ...rectOf($("secIco")), a: 1 };
+      if (SEC[section][1] === i) { const ph = ov.querySelector(`.ico[data-ico="${i}"]`); return { ...rectOf(ph), a: 1 }; }
+      return { x: icons[i].x, y: icons[i].y, s: 0, a: 0 };
+    }
+    const ph = ov.querySelector(`.ico[data-ico="${i}"]`), li = ph.closest("li");
+    if (!ph || li.hidden || $("ovHome").hidden) return { x: icons[i].x, y: icons[i].y, s: 0, a: 0 };
+    return { ...rectOf(ph), a: 1 };
+  }
+  function draw(now) {
+    raf = 0;
+    if (ov.hidden) return;
+    const still = reducedMotion(), t = now / 1000, dt = last ? Math.min(100, now - last) : 16;
+    last = now;
+    c2.setTransform(dpr, 0, 0, dpr, 0, 0); c2.clearRect(0, 0, Wc, Hc);
+    c2.lineJoin = "round";
+    // Small tetras and the two huge faint ones in the corners.
+    const paths = new Array(FX_COLORS.length * 4), tt = still ? 0 : t;
+    for (const p of field) {
+      const x = p.fx * Wc + 8 * Math.sin(tt * 0.05 + p.ph), y = p.fy * Hc + 6 * Math.cos(tt * 0.04 + p.ph), k = p.col * 4 + clamp(Math.floor(p.a / 0.12), 0, 3);
+      addTetra(paths[k] || (paths[k] = new Path2D()), x, y, p.size / 2, p.ra + tt * p.sa, p.rb + tt * p.sb);
+    }
+    c2.lineWidth = 1;
+    paths.forEach((path, k) => { if (path) { c2.strokeStyle = `rgba(${FX_COLORS[Math.floor(k / 4)]},${0.15 + (k % 4) * 0.1})`; c2.stroke(path); } });
+    c2.lineWidth = 1.5;
+    for (const c of corners) {
+      const path = new Path2D(); addTetra(path, c.fx * Wc, c.fy * Hc, c.size / 2, c.ra + tt * 0.03, c.rb + tt * 0.02);
+      c2.shadowColor = `rgba(${FX_COLORS[c.col]},.5)`; c2.shadowBlur = 20; c2.strokeStyle = `rgba(${FX_COLORS[c.col]},.1)`; c2.stroke(path);
+    }
+    // Entry icons: ease toward their placeholders; the further they have to go, the faster they spin.
+    let busy = false;
+    icons.forEach((ic, i) => {
+      const tg = target(i);
+      if (now < ic.start && isOpen) { busy = true; return; }
+      if (tg) {
+        const k = still ? 1 : 1 - Math.exp(-dt / (isOpen ? 110 : 60));
+        const far = Math.hypot(tg.x - ic.x, tg.y - ic.y) + Math.abs(tg.s - ic.s);
+        ic.x += (tg.x - ic.x) * k; ic.y += (tg.y - ic.y) * k; ic.s += (tg.s - ic.s) * k; ic.a += (tg.a - ic.a) * k;
+        if (!still) { ic.ra += dt / 1000 * (0.5 + far * 0.02); ic.rb += dt / 1000 * (0.3 + far * 0.012); }
+        if (far > 0.5 || Math.abs(tg.a - ic.a) > 0.01) busy = true;
+      } else if (!still) { ic.ra += dt / 1000 * 0.5; ic.rb += dt / 1000 * 0.3; }
+      if (ic.a < 0.01 || ic.s < 1) return;
+      const col = ICON_COLS[i], path = new Path2D();
+      addTetra(path, ic.x, ic.y, ic.s * 0.46, ic.ra, ic.rb);
+      c2.lineWidth = 1.8; c2.shadowColor = `rgba(${col},${0.9 * ic.a})`; c2.shadowBlur = 18;
+      c2.strokeStyle = `rgba(${col},${0.95 * ic.a})`; c2.stroke(path);
+      c2.shadowBlur = 0; c2.lineWidth = 0.8; c2.strokeStyle = `rgba(255,255,255,${0.5 * ic.a})`; c2.stroke(path);
+    });
+    c2.shadowBlur = 0;
+    if (!still || busy || isOpen) start();
+  }
+  function start() { if (!raf && !document.hidden && !ov.hidden) raf = requestAnimationFrame(draw); }
+  function subtitle() {
+    const p = state.p; if (!p) return "";
+    return state.matchups ? `${p.name} ${p.side === "a" ? "@" : "vs"} ${teamName(p.opponent)} · model ${p.pred_k.toFixed(1)} K` : `${p.name} · model ${p.pred_k.toFixed(1)} K`;
+  }
+  function open() {
+    if (isOpen) return;
+    clearTimeout(hideTimer);
+    isOpen = true; section = null; size();
+    $("ovSub").textContent = subtitle();
+    $("entRunSub").textContent = state.game ? `${state.game.bf} batters · seed ${state.seed}` : "The start you're watching";
+    $("entRunsSub").textContent = `${state.history.length} run${state.history.length === 1 ? "" : "s"} · history and seed replay`;
+    $("ovHome").hidden = false; $("ovHome").classList.remove("leaving"); $("ovSec").hidden = true; $("ovSec").classList.remove("shown");
+    ov.hidden = false; ov.classList.remove("closing"); void ov.offsetWidth; ov.classList.add("open");
+    $("stage").classList.add("dimmed"); $("stage").inert = true;
+    ["menuBtn", "menuHandle"].forEach(id => $(id).setAttribute("aria-expanded", "true"));
+    const now = performance.now();
+    icons.forEach((ic, i) => { Object.assign(ic, scattered()); ic.start = now + i * 90; });
+    last = 0; start();
+    setTimeout(() => { if (isOpen) state_.covering = true; }, 360);
+    const first = ov.querySelector(".ov-list li:not([hidden]) .ov-item"); if (first) first.focus({ preventScroll: true });
+  }
+  function close() {
+    if (!isOpen) return;
+    isOpen = false; state_.covering = false;
+    ov.classList.add("closing"); ov.classList.remove("open");
+    $("stage").classList.remove("dimmed"); $("stage").inert = false;
+    ["menuBtn", "menuHandle"].forEach(id => $(id).setAttribute("aria-expanded", "false"));
+    // Fly the icons out: aim each at a scattered point while fading.
+    const outs = icons.map(() => scattered()), t0 = performance.now(), from = icons.map(ic => ({ ...ic }));
+    (function out(now) {
+      const u = reducedMotion() ? 1 : clamp((now - t0) / 180, 0, 1);
+      icons.forEach((ic, i) => { ic.x = lerp(from[i].x, outs[i].x, u * u); ic.y = lerp(from[i].y, outs[i].y, u * u); ic.a = from[i].a * (1 - u); });
+      if (u < 1 && !isOpen) requestAnimationFrame(out);
+    })(t0);
+    hideTimer = setTimeout(() => { if (!isOpen) { ov.hidden = true; ov.classList.remove("closing"); } }, 200);
+    if (ov.contains(document.activeElement) || document.activeElement === document.body) $("menuBtn").focus({ preventScroll: true });
+  }
+  function openSection(name) {
+    section = name;
+    const [title, i] = SEC[name];
+    $("ovHome").classList.add("leaving");
+    const show = () => {
+      if (section !== name) return;
+      $("ovHome").hidden = true;
+      document.querySelectorAll(".ov .sec").forEach(el => { el.hidden = el.dataset.sec !== name; });
+      $("secTitle").textContent = title;
+      $("ovSec").hidden = false; ov.scrollTop = 0;
+      requestAnimationFrame(() => $("ovSec").classList.add("shown"));
+      $("ovBack").focus({ preventScroll: true });
+    };
+    if (reducedMotion()) show(); else setTimeout(show, 180);
+    start();
+  }
+  function back() {
+    const was = section; section = null;
+    $("ovSec").classList.remove("shown"); $("ovSec").hidden = true;
+    $("ovHome").hidden = false; void $("ovHome").offsetWidth; $("ovHome").classList.remove("leaving");
+    ov.scrollTop = 0; start();
+    const btn = ov.querySelector(`.ov-item[data-sec="${was}"]`); if (btn) btn.focus({ preventScroll: true });
+  }
+  ov.querySelectorAll(".ov-item").forEach(b => b.addEventListener("click", () => openSection(b.dataset.sec)));
+  $("ovBack").addEventListener("click", back);
+  $("ovClose").addEventListener("click", close);
+  $("menuBtn").addEventListener("click", () => (isOpen ? close() : open()));
+  $("menuHandle").addEventListener("click", open);
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && isOpen) { e.preventDefault(); close(); } });
+  window.addEventListener("resize", () => { if (!ov.hidden) { size(); start(); } });
+  ov.addEventListener("scroll", start, { passive: true });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) start(); });
+  return { open, close, get covering() { return state_.covering; }, get isOpen() { return isOpen; } };
+})();
+
+// Floating bars: keep the caption, pitch list and summary clear of them.
+new ResizeObserver(() => {
+  $("stage").style.setProperty("--dock-h", $("dock").offsetHeight + "px");
+  $("stage").style.setProperty("--top-h", ($("topbar").offsetHeight + 8) + "px");
+}).observe($("dock"));
+new ResizeObserver(() => $("stage").style.setProperty("--top-h", ($("topbar").offsetHeight + 8) + "px")).observe($("topbar"));
+window.addEventListener("resize", () => resize());   // page zoom changes devicePixelRatio
+new ResizeObserver(() => { resize(); $("labels").dataset.key = ""; }).observe(canvas);
+resize();
+(async function boot() {
+  // The latest export, when the page is served next to it: pitcher-vs-team matchups first,
+  // then the full season, then upcoming starts.
+  try {
+    const r = await fetch("matchups_2026.json", { cache: "no-store" });
+    const data = r.ok ? parseMatchups(await r.json()) : null;
+    if (data && data.list.length) { setMatchups(data); requestAnimationFrame(frame); return; }
+  } catch (e) { /* no matchup export yet */ }
+  for (const file of ["season_2026.json", "predictions.json"]) {
+    try {
+      const r = await fetch(file, { cache: "no-store" });
+      if (r.ok) { setPitchers(parsePitchers(await r.json())); requestAnimationFrame(frame); return; }
+    } catch (e) { /* opened as a file, or no export yet */ }
+  }
+  setPitchers(parsePitchers(SAMPLE_DATA));
+  requestAnimationFrame(frame);
+})();
+</script>

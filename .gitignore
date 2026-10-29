@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.DS_Store
+
+# Raw Statcast pitches are ~1 GB: cached locally only.
+data/raw/statcast/
+# Rebuilt on every run.
+data/processed/
+models/*_eval.joblib
+
+# Scheduled update logs.
+logs/
+
+# Local run logs and editor/tool config.
+*.log
+.claude/

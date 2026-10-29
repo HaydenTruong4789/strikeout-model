@@ -1,0 +1,1247 @@
+[
+  {
+    "pitcher": "Shawn Armstrong",
+    "pitcher_id": 542888,
+    "hand": "R",
+    "team": "CLE",
+    "opponent": "TB",
+    "game_date": "2026-10-19",
+    "pred_k": 1.12,
+    "pred_bf": 7.0,
+    "k_rate": 0.16,
+    "probs": {},
+    "pitch_mix": [
+      {
+        "type": "4-Seam Fastball",
+        "usage": 0.306,
+        "velo_mean": 93.4,
+        "velo_sd": 0.97,
+        "whiff_rate": 0.252
+      },
+      {
+        "type": "Sweeper",
+        "usage": 0.297,
+        "velo_mean": 84.5,
+        "velo_sd": 0.95,
+        "whiff_rate": 0.263
+      },
+      {
+        "type": "Cutter",
+        "usage": 0.231,
+        "velo_mean": 89.9,
+        "velo_sd": 0.95,
+        "whiff_rate": 0.216
+      },
+      {
+        "type": "Sinker",
+        "usage": 0.166,
+        "velo_mean": 93.6,
+        "velo_sd": 1.05,
+        "whiff_rate": 0.157
+      }
+    ],
+    "k_pitches": [
+      {
+        "type": "Cutter",
+        "velo": 88.9,
+        "px": 0.48,
+        "pz": 1.42,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.2,
+        "px": -0.24,
+        "pz": 3.39,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.4,
+        "px": -0.46,
+        "pz": 4.12,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.5,
+        "px": 0.57,
+        "pz": 1.66,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.1,
+        "px": -0.02,
+        "pz": 2.23,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 92.5,
+        "px": 0.33,
+        "pz": 1.99,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 83.8,
+        "px": 0.6,
+        "pz": 1.72,
+        "looking": true
+      },
+      {
+        "type": "Cutter",
+        "velo": 91.3,
+        "px": -0.1,
+        "pz": 2.91,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 84.5,
+        "px": 0.1,
+        "pz": 2.38,
+        "looking": false
+      },
+      {
+        "type": "Cutter",
+        "velo": 89.9,
+        "px": -0.56,
+        "pz": 3.58,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.6,
+        "px": -0.25,
+        "pz": 3.33,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 92.9,
+        "px": 0.02,
+        "pz": 3.3,
+        "looking": false
+      },
+      {
+        "type": "Cutter",
+        "velo": 91.8,
+        "px": -0.42,
+        "pz": 2.41,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.5,
+        "px": -0.22,
+        "pz": 2.35,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.6,
+        "px": 0.15,
+        "pz": 4.03,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 92.5,
+        "px": 0.71,
+        "pz": 2.97,
+        "looking": true
+      },
+      {
+        "type": "Sweeper",
+        "velo": 84.6,
+        "px": 0.0,
+        "pz": 3.42,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.2,
+        "px": -0.03,
+        "pz": 4.29,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 83.0,
+        "px": -0.11,
+        "pz": 3.77,
+        "looking": false
+      },
+      {
+        "type": "Sinker",
+        "velo": 95.9,
+        "px": -0.11,
+        "pz": 3.64,
+        "looking": false
+      },
+      {
+        "type": "Sinker",
+        "velo": 94.9,
+        "px": -0.73,
+        "pz": 3.42,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 85.0,
+        "px": -0.75,
+        "pz": 3.23,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.0,
+        "px": 0.02,
+        "pz": 3.26,
+        "looking": false
+      },
+      {
+        "type": "Cutter",
+        "velo": 91.1,
+        "px": 1.37,
+        "pz": 2.0,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.1,
+        "px": -0.43,
+        "pz": 3.7,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 85.4,
+        "px": 0.64,
+        "pz": 1.45,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 85.0,
+        "px": 0.96,
+        "pz": 0.71,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.2,
+        "px": -0.44,
+        "pz": 3.61,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 86.4,
+        "px": 1.11,
+        "pz": 2.74,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.1,
+        "px": -0.31,
+        "pz": 3.1,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.6,
+        "px": -0.45,
+        "pz": 3.26,
+        "looking": false
+      },
+      {
+        "type": "Cutter",
+        "velo": 90.3,
+        "px": 0.11,
+        "pz": 3.65,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 84.4,
+        "px": 0.97,
+        "pz": 2.86,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 82.8,
+        "px": -0.18,
+        "pz": 2.77,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 86.9,
+        "px": 1.88,
+        "pz": 1.92,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 92.7,
+        "px": 0.24,
+        "pz": 3.1,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 92.3,
+        "px": -0.37,
+        "pz": 4.06,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.4,
+        "px": -0.46,
+        "pz": 2.47,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 84.8,
+        "px": 0.92,
+        "pz": 1.84,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 92.8,
+        "px": 0.34,
+        "pz": 3.01,
+        "looking": true
+      }
+    ],
+    "two_strike": {
+      "pitches": 227,
+      "mix": {
+        "4-Seam Fastball": 0.419,
+        "Sweeper": 0.291,
+        "Cutter": 0.15,
+        "Sinker": 0.141
+      },
+      "out_of_zone": 0.537,
+      "chase": 0.361,
+      "whiff_per_chase": 0.364,
+      "looking_k_share": 0.15,
+      "strikeouts": 40
+    }
+  },
+  {
+    "pitcher": "Freddy Peralta",
+    "pitcher_id": 642547,
+    "hand": "R",
+    "team": "TB",
+    "opponent": "CLE",
+    "game_date": "2026-10-19",
+    "pred_k": 5.27,
+    "pred_bf": 21.2,
+    "k_rate": 0.248,
+    "probs": {},
+    "pitch_mix": [
+      {
+        "type": "4-Seam Fastball",
+        "usage": 0.546,
+        "velo_mean": 94.6,
+        "velo_sd": 1.66,
+        "whiff_rate": 0.23
+      },
+      {
+        "type": "Changeup",
+        "usage": 0.238,
+        "velo_mean": 87.5,
+        "velo_sd": 1.24,
+        "whiff_rate": 0.296
+      },
+      {
+        "type": "Curveball",
+        "usage": 0.126,
+        "velo_mean": 79.7,
+        "velo_sd": 2.02,
+        "whiff_rate": 0.31
+      },
+      {
+        "type": "Sweeper",
+        "usage": 0.053,
+        "velo_mean": 82.4,
+        "velo_sd": 1.81,
+        "whiff_rate": 0.25
+      },
+      {
+        "type": "Slider",
+        "usage": 0.037,
+        "velo_mean": 83.1,
+        "velo_sd": 1.44,
+        "whiff_rate": 0.487
+      }
+    ],
+    "k_pitches": [
+      {
+        "type": "Changeup",
+        "velo": 85.3,
+        "px": -0.91,
+        "pz": 1.96,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.2,
+        "px": 0.7,
+        "pz": 1.93,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.8,
+        "px": 0.17,
+        "pz": 4.24,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.4,
+        "px": 0.53,
+        "pz": 3.38,
+        "looking": false
+      },
+      {
+        "type": "Slider",
+        "velo": 83.7,
+        "px": -0.16,
+        "pz": 0.72,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 79.6,
+        "px": 0.67,
+        "pz": 0.48,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.6,
+        "px": -0.68,
+        "pz": 3.71,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.5,
+        "px": 0.46,
+        "pz": 2.19,
+        "looking": false
+      },
+      {
+        "type": "Slider",
+        "velo": 81.8,
+        "px": -0.17,
+        "pz": 0.84,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 91.5,
+        "px": -0.53,
+        "pz": 1.76,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 92.7,
+        "px": -0.66,
+        "pz": 4.69,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 78.7,
+        "px": 1.11,
+        "pz": 0.85,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.9,
+        "px": 0.39,
+        "pz": 1.98,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.8,
+        "px": -0.21,
+        "pz": 3.66,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.0,
+        "px": 0.23,
+        "pz": 1.22,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 85.9,
+        "px": -0.43,
+        "pz": 3.31,
+        "looking": true
+      },
+      {
+        "type": "Curveball",
+        "velo": 81.6,
+        "px": 1.13,
+        "pz": -0.11,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 89.1,
+        "px": -0.73,
+        "pz": 0.34,
+        "looking": false
+      },
+      {
+        "type": "Slider",
+        "velo": 82.2,
+        "px": -0.43,
+        "pz": 2.59,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.0,
+        "px": -0.02,
+        "pz": 1.04,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.2,
+        "px": -1.04,
+        "pz": 3.94,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 80.9,
+        "px": -0.31,
+        "pz": 2.97,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.3,
+        "px": 0.1,
+        "pz": 4.71,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.9,
+        "px": -1.04,
+        "pz": 3.79,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.4,
+        "px": -0.92,
+        "pz": 1.0,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 82.0,
+        "px": 1.25,
+        "pz": 1.44,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 78.3,
+        "px": -0.7,
+        "pz": 2.49,
+        "looking": true
+      },
+      {
+        "type": "Curveball",
+        "velo": 77.9,
+        "px": -0.87,
+        "pz": 1.36,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.4,
+        "px": -1.95,
+        "pz": 2.84,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.6,
+        "px": -0.68,
+        "pz": 2.84,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.4,
+        "px": -0.66,
+        "pz": 3.37,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.9,
+        "px": -0.37,
+        "pz": 3.46,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 81.0,
+        "px": -0.51,
+        "pz": 1.28,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.3,
+        "px": 0.05,
+        "pz": 3.09,
+        "looking": true
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.1,
+        "px": -0.65,
+        "pz": 1.09,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.1,
+        "px": -0.24,
+        "pz": 4.14,
+        "looking": false
+      },
+      {
+        "type": "Slow Curve",
+        "velo": 74.5,
+        "px": -0.55,
+        "pz": 0.22,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.5,
+        "px": 0.18,
+        "pz": 4.44,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 87.4,
+        "px": -0.17,
+        "pz": 1.44,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.0,
+        "px": -0.27,
+        "pz": 3.33,
+        "looking": true
+      },
+      {
+        "type": "Curveball",
+        "velo": 76.4,
+        "px": 0.62,
+        "pz": -0.52,
+        "looking": false
+      },
+      {
+        "type": "Slow Curve",
+        "velo": 73.5,
+        "px": -0.19,
+        "pz": 0.22,
+        "looking": false
+      },
+      {
+        "type": "Slow Curve",
+        "velo": 74.0,
+        "px": 0.13,
+        "pz": 1.61,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 98.8,
+        "px": 0.23,
+        "pz": 2.24,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 83.6,
+        "px": 1.56,
+        "pz": 1.09,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 78.2,
+        "px": -0.26,
+        "pz": 0.91,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.0,
+        "px": -0.2,
+        "pz": 1.11,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 80.2,
+        "px": 0.6,
+        "pz": 1.52,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.3,
+        "px": -0.71,
+        "pz": 3.05,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 75.5,
+        "px": -0.57,
+        "pz": 0.6,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.3,
+        "px": 0.12,
+        "pz": 3.84,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.9,
+        "px": 0.1,
+        "pz": 4.26,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.5,
+        "px": -0.51,
+        "pz": 3.09,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.4,
+        "px": -0.57,
+        "pz": 4.08,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.7,
+        "px": 0.76,
+        "pz": 3.57,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 78.2,
+        "px": 0.61,
+        "pz": 1.95,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.8,
+        "px": 0.16,
+        "pz": 1.71,
+        "looking": true
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.8,
+        "px": 0.86,
+        "pz": 0.95,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 81.0,
+        "px": 0.46,
+        "pz": 2.61,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.1,
+        "px": 0.0,
+        "pz": 2.18,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.6,
+        "px": -0.68,
+        "pz": 3.34,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.0,
+        "px": -0.81,
+        "pz": 2.02,
+        "looking": true
+      },
+      {
+        "type": "Curveball",
+        "velo": 81.0,
+        "px": -0.4,
+        "pz": 0.35,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.1,
+        "px": 0.25,
+        "pz": 4.74,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.1,
+        "px": -0.44,
+        "pz": 3.29,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 80.1,
+        "px": 0.92,
+        "pz": 2.69,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 79.4,
+        "px": -0.42,
+        "pz": 2.41,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.9,
+        "px": 0.02,
+        "pz": 3.45,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.1,
+        "px": -0.57,
+        "pz": 0.24,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.1,
+        "px": -1.17,
+        "pz": 1.44,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.7,
+        "px": -1.51,
+        "pz": 1.52,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.0,
+        "px": -1.2,
+        "pz": 1.53,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 85.0,
+        "px": -1.03,
+        "pz": 0.91,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.3,
+        "px": 0.17,
+        "pz": 2.55,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.2,
+        "px": -0.23,
+        "pz": 4.38,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 75.2,
+        "px": -0.53,
+        "pz": 1.58,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.8,
+        "px": -0.91,
+        "pz": 1.31,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.5,
+        "px": -0.08,
+        "pz": 3.88,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.5,
+        "px": -0.14,
+        "pz": 4.25,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.4,
+        "px": -0.08,
+        "pz": 4.03,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.2,
+        "px": -0.42,
+        "pz": 2.4,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.6,
+        "px": 0.77,
+        "pz": 2.47,
+        "looking": true
+      },
+      {
+        "type": "Changeup",
+        "velo": 86.6,
+        "px": -0.36,
+        "pz": 2.38,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 82.1,
+        "px": 0.51,
+        "pz": 2.73,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 80.3,
+        "px": 0.55,
+        "pz": 2.62,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 84.8,
+        "px": 1.4,
+        "pz": 2.7,
+        "looking": false
+      },
+      {
+        "type": "Sweeper",
+        "velo": 84.8,
+        "px": -0.35,
+        "pz": 3.88,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 89.2,
+        "px": -1.11,
+        "pz": 0.28,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 87.6,
+        "px": -0.65,
+        "pz": 0.3,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.4,
+        "px": -0.09,
+        "pz": 4.62,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 97.5,
+        "px": -0.74,
+        "pz": 3.73,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 80.8,
+        "px": -0.81,
+        "pz": 2.83,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 93.9,
+        "px": -0.13,
+        "pz": 4.17,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 91.1,
+        "px": 0.81,
+        "pz": 1.71,
+        "looking": true
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.0,
+        "px": -0.18,
+        "pz": 2.13,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.1,
+        "px": 0.36,
+        "pz": 4.49,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 94.1,
+        "px": 0.06,
+        "pz": 4.76,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 78.9,
+        "px": -0.88,
+        "pz": 1.46,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 89.0,
+        "px": -0.7,
+        "pz": 0.88,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 98.0,
+        "px": 0.12,
+        "pz": 3.07,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 89.7,
+        "px": -0.43,
+        "pz": 1.56,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.4,
+        "px": 0.25,
+        "pz": 4.48,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 97.3,
+        "px": 0.02,
+        "pz": 3.48,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 90.0,
+        "px": -0.94,
+        "pz": 1.1,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.1,
+        "px": -0.63,
+        "pz": 2.59,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.6,
+        "px": -0.88,
+        "pz": 0.86,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.8,
+        "px": -0.32,
+        "pz": 3.49,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 97.1,
+        "px": 1.35,
+        "pz": 2.58,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 97.3,
+        "px": -0.25,
+        "pz": 2.17,
+        "looking": false
+      },
+      {
+        "type": "Curveball",
+        "velo": 82.6,
+        "px": -0.22,
+        "pz": 3.37,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 89.6,
+        "px": -0.78,
+        "pz": 1.54,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 89.0,
+        "px": -0.3,
+        "pz": 2.13,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 97.3,
+        "px": -0.12,
+        "pz": 4.07,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 89.1,
+        "px": -0.71,
+        "pz": 1.13,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 88.8,
+        "px": -0.63,
+        "pz": 0.16,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 95.9,
+        "px": -0.26,
+        "pz": 3.79,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.3,
+        "px": 0.63,
+        "pz": 3.9,
+        "looking": false
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 97.8,
+        "px": -0.76,
+        "pz": 1.89,
+        "looking": true
+      },
+      {
+        "type": "4-Seam Fastball",
+        "velo": 96.4,
+        "px": -0.28,
+        "pz": 4.58,
+        "looking": false
+      },
+      {
+        "type": "Changeup",
+        "velo": 90.0,
+        "px": -1.02,
+        "pz": 2.08,
+        "looking": false
+      }
+    ],
+    "two_strike": {
+      "pitches": 993,
+      "mix": {
+        "4-Seam Fastball": 0.468,
+        "Changeup": 0.263,
+        "Curveball": 0.145,
+        "Sweeper": 0.061,
+        "Slider": 0.039,
+        "Slow Curve": 0.023
+      },
+      "out_of_zone": 0.653,
+      "chase": 0.42,
+      "whiff_per_chase": 0.338,
+      "looking_k_share": 0.173,
+      "strikeouts": 168
+    }
+  }
+]
