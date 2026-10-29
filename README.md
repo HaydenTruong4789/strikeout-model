@@ -26,7 +26,7 @@ That runs these five steps, which you can also run one at a time:
 |---|---|---|---|
 | 1 | `python src/fetch_data.py` | Downloads 2021-2026 regular-season and postseason game logs (MLB Stats API) and Statcast pitches (pybaseball), cached so reruns skip what's already there | `data/raw/` |
 | 2 | `python src/build_features.py` | Builds one row per start with pre-game features, then runs the leakage audit | `data/processed/features.parquet` |
-| 3 | `python src/train.py` | Fits the baseline, linear regression and tuned random forest on a time split, plus the leaky-feature sanity check | `models/`, `metrics/latest.json` |
+| 3 | `python src/train.py` | Fits the baseline, linear regression and tuned random forest on a time split as benchmarks, plus the leaky-feature sanity check (predictions use the linear + gradient boosting blend; see Models and evaluation) | `models/`, `metrics/latest.json` |
 | 4 | `python src/evaluate.py` | Comparison table, plots, feature importance, noise analysis, what each feature group adds, and written interpretation | `reports/results.md`, `reports/figures/` |
 | 5 | `python src/analyze_patterns.py` | Strikeout patterns by rest, home/away, platoon, pitch type and velocity, team lineups, weather, park, umpire and opponent form | `reports/patterns.md`, `reports/figures/patterns_*.png` |
 
@@ -168,7 +168,8 @@ Pitchers whose careers began before 2021 have no rolling values at their first 2
 * **Split:** time-based only. The test season is the newest season with at least 300 starts and training uses every earlier season, which is train 2021-2025 and test 2026 for the 2021-2026 data. No shuffling anywhere.
 * **Tuning:** random forest grid over `n_estimators`, `max_depth` and `min_samples_leaf`, scored by MAE on expanding-window season folds inside training (fit on seasons before S, validate on S, for the last two training seasons).
 * **Models:** naive baseline (season-to-date K per start), linear regression, random forest. Seeds are fixed at 42.
-* **Shipped model:** after evaluation, the random forest is refit on all seasons and saved to `models/model.joblib`.
+* **Benchmark model file:** after evaluation, the random forest is refit on all seasons and saved to `models/model.joblib`. It is the model the weekly quality gate checks, but nothing that makes predictions loads it.
+* **Model behind every prediction:** the upcoming-starts predictions, the app and the simulator all use a 50/50 blend of the linear regression and Poisson gradient boosting (`make_blend` in `src/train.py`). It won the comparison in `python src/compare_models.py` (see [`reports/model_comparison.md`](reports/model_comparison.md)) and is refit from the cached data each time those run, so it is never saved to disk.
 
 `evaluate.py` writes MAE, RMSE, R² and percent improvement over the baseline for all three models, permutation feature importance for the random forest, a predicted vs. actual scatter, residual distributions, and a written interpretation. It also shows test MAE for nested feature sets (core only, core plus matchup, core plus context, everything) so you can see which group of features actually helps.
 
